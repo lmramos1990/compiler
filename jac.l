@@ -72,7 +72,7 @@ text   		[a-zA-Z0-9]
 \"																				{ col++; BEGIN STRING; }
 <STRING>([^"\n\r\\]|\\[fnrt\"\\])*												{ col += yyleng; }
 <STRING>\\.																		{ if (flag) { printf("Line %d, col %d: invalid escape sequence (%s)\n", line, col, yytext);} col += yyleng; }
-<STRING>\r\n|\n|\r																{ if (flag) { printf("Line %d, col %d: unterminated string literal\n", line, col);} line++; col = 1; BEGIN 0; }
+<STRING>\r\n|\n|\r|<<EOF>>														{ if (flag) { printf("Line %d, col %d: unterminated string literal\n", line, col);} line++; col = 1; BEGIN 0; }
 <STRING>\"																		{;}
 
 
