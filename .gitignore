@@ -146,3 +146,4 @@ $RECYCLE.BIN/
 # Compilers stuff
 1.zip
 compiler
+lex.yy.c
