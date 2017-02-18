@@ -107,8 +107,7 @@ text   		[a-zA-Z0-9]
 */
 
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
 	if (argc > 0 && (strcmp(argv[1], "-1") == 0 || strcmp(argv[1], "-l") == 0)) {
 		flag = 1;
 	}
@@ -117,7 +116,6 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-int yywrap()
-{
+int yywrap() {
 	return 1;			/* Esta funcao sera chamada quando o input chegar ao fim. Devolve 1 se nao houver mais nada a processar */
 }
