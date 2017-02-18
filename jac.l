@@ -1,6 +1,6 @@
-number  [0-9]
-letter   [a-zA-Z]
-text   [a-zA-Z0-9]
+number  	[0-9]
+letter   	[a-zA-Z]
+text   		[a-zA-Z0-9]
 %{
 	#include <string.h>
 
