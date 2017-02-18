@@ -142,3 +142,7 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/c,flex,macos,windows,linux
+
+# Compilers stuff
+1.zip
+compiler
