@@ -74,9 +74,9 @@ text   		[a-zA-Z0-9]
 <STRING>\\.																		{ if (flag) { printf("Line %d, col %d: invalid escape sequence (%s)\n", line, col, yytext);} col += yyleng; }
 <STRING>\r\n|\n|\r																{ if (flag) { printf("Line %d, col %d: unterminated string literal\n", line, col);} line++; col = 1; BEGIN 0; }
 <STRING><<EOF>>																	{ if (flag) { printf("Line %d, col %d: unterminated string literal\n", line, col);} line++; col = 1; BEGIN 0; }
-<STRING>\"																		{;}
+<STRING>\"																		{ BEGIN 0;}
 
-
+" "																				{ col++; }
 "\r\n"|"\n"|"\r"																{ col = 1; line++; }
 .																				{ if (flag) { printf("Line %d, col %d: illegal character (%s)\n", line, col, yytext);} col++; }
 
