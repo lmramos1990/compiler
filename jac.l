@@ -52,7 +52,7 @@ text   		[a-zA-Z0-9]
 ";"																				{ col += yyleng; if (flag) { printf("SEMI\n");} }
 ","																				{ col += yyleng; if (flag) { printf("COMMA\n");} }
 
-"++"|"--"|"null"|"abstract"|"continue"|"for"|"new"|"switch"|"assert"|"default"|"goto"|"package"|"synchronized"|"boolean"|"do"|"if"|"private"|"this"|"break"|"double"|"implements"|"protected"|"throw"|"byte"|"else"|"import"|"public"|"throws"|"case"|"enum"|"instanceof"|"return"|"transient"|"catch"|"extends"|"int"|"short"|"try"|"char"|"final"|"interface"|"static"|"void"|"class"|"finally"|"long"|"strictfp"|"volatile"|"const"|"float"|"native"|"super"|"while"													{ col += yyleng; if (flag) { printf("RESERVED(%s)\n", yytext);} }
+"Integer"|"System"|"++"|"--"|"null"|"abstract"|"continue"|"for"|"new"|"switch"|"assert"|"default"|"goto"|"package"|"synchronized"|"boolean"|"do"|"if"|"private"|"this"|"break"|"double"|"implements"|"protected"|"throw"|"byte"|"else"|"import"|"public"|"throws"|"case"|"enum"|"instanceof"|"return"|"transient"|"catch"|"extends"|"int"|"short"|"try"|"char"|"final"|"interface"|"static"|"void"|"class"|"finally"|"long"|"strictfp"|"volatile"|"const"|"float"|"native"|"super"|"while"													{ col += yyleng; if (flag) { printf("RESERVED(%s)\n", yytext);} }
 
 \/\/[^\n\r]*																	{;}
 
@@ -76,8 +76,8 @@ text   		[a-zA-Z0-9]
 <STRING><<EOF>>																	{ if (flag) { printf("Line %d, col %d: unterminated string literal\n", line, col);} line++; col = 1; BEGIN 0; }
 <STRING>\"																		{ BEGIN 0;}
 
-" "																				{ col++; }
-"\r\n"|"\n"|"\r"																{ col = 1; line++; }
+" "|"\t"																		{ col++; }
+"\r\n"|"\n"|"\r"|"\f"															{ col = 1; line++; }
 .																				{ if (flag) { printf("Line %d, col %d: illegal character (%s)\n", line, col, yytext);} col++; }
 
 %%
