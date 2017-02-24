@@ -4,7 +4,7 @@ text   		[a-zA-Z0-9]
 %{
 	#include <string.h>
 
-	int flag = 0, col = 1, line = 1;
+	int flag = 0, col = 1, line = 1, colAux, lineAux;
 %}
 
 %X COMMENT_MULTI STRING
@@ -56,11 +56,11 @@ text   		[a-zA-Z0-9]
 
 \/\/[^\n\r]*																	{;}
 
-"/*"																			{ col += yyleng; BEGIN COMMENT_MULTI; }
+"/*"																			{ lineAux = line; colAux = col; col += yyleng; BEGIN COMMENT_MULTI; }
 <COMMENT_MULTI>"*/"																{ col += yyleng; BEGIN 0; }
 <COMMENT_MULTI>\n																{ line++; col = 1; }
 <COMMENT_MULTI>.																{ col++; }
-<COMMENT_MULTI><<EOF>>															{ if (flag) { printf("Line %d, col %d: unterminated comment\n", line, col);} yyterminate(); }
+<COMMENT_MULTI><<EOF>>															{ if (flag) { printf("Line %d, col %d: unterminated comment\n", lineAux, colAux);} yyterminate(); }
 
 ({letter}|[_$])({text}|[_$])*													{ if (flag) { col += yyleng; printf("ID(%s)\n", yytext);} }
 
@@ -69,11 +69,11 @@ text   		[a-zA-Z0-9]
 ([0-9]([0-9]|_)*[0-9]|[0-9])(\.(([0-9]([0-9]|_)*[0-9]|[0-9])([eE][+-]?([0-9]([0-9]|_)*[0-9]|[0-9]))?)?|([eE][+-]?([0-9]([0-9]|_)*[0-9]|[0-9])))|\.([0-9]([0-9]|_)*[0-9]|[0-9])([eE][+-]?([0-9]([0-9]|_)*[0-9]|[0-9]))?		{ if (flag) { col += yyleng; printf("REALIT(%s)\n", yytext);} }
 
 \"([^"\n\r\\]|\\[fnrt\"\\])*\"													{ if (flag) { col += yyleng; printf("STRLIT(%s)\n", yytext);} }
-\"																				{ col++; BEGIN STRING; }
+\"																				{ colAux = col++; BEGIN STRING; }
 <STRING>([^"\n\r\\]|\\[fnrt\"\\])*												{ col += yyleng; }
 <STRING>\\.																		{ if (flag) { printf("Line %d, col %d: invalid escape sequence (%s)\n", line, col, yytext);} col += yyleng; }
-<STRING>\r\n|\n|\r																{ if (flag) { printf("Line %d, col %d: unterminated string literal\n", line, col);} line++; col = 1; BEGIN 0; }
-<STRING><<EOF>>																	{ if (flag) { printf("Line %d, col %d: unterminated string literal\n", line, col);} line++; col = 1; BEGIN 0; }
+<STRING>\r\n|\n|\r																{ if (flag) { printf("Line %d, col %d: unterminated string literal\n", line, colAux);} line++; col = 1; BEGIN 0; }
+<STRING><<EOF>>																	{ if (flag) { printf("Line %d, col %d: unterminated string literal\n", line, colAux);} line++; col = 1; BEGIN 0; }
 <STRING>\"																		{ BEGIN 0;}
 
 " "|"\t"																		{ col++; }
@@ -87,23 +87,6 @@ text   		[a-zA-Z0-9]
 ({numero}|[1-9]({numero}|_)*{numero})"."({numero}|[1-9]({numero}|_)*{numero})
 ({numero}|{numero}({numero}|_)*{numero})"." | "."({numero}|{numero}({numero}|_)*{numero})[eE][+-]?
 ([0-9]([0-9]|_)*[0-9]|[0-9])(\.(([0-9]([0-9]|_)*[0-9]|[0-9])([eE][+-]?([0-9]([0-9]|_)*[0-9]|[0-9]))?)?|([eE][+-]?([0-9]([0-9]|_)*[0-9]|[0-9])))|\.([0-9]([0-9]|_)*[0-9]|[0-9])([eE][+-]?([0-9]([0-9]|_)*[0-9]|[0-9]))?
-
-"++"|"--"|"null"|"abstract"|"continue"|"for"|"new"|"switch"|"assert"|"default"|"goto"|"package"|"synchronized"|"boolean"|"do"|"if"|"private"|"this"|"break"|"double"|"implements"|"protected"|"throw"|"byte"|"else"|"import"|"public"|"throws"|"case"|"enum"|"instanceof"|"return"|"transient"|"catch"|"extends"|"int"|"short"|"try"|"char"|"final"|"interface"|"static"|"void"|"class"|"finally"|"long"|"strictfp"|"volatile"|"const"|"float"|"native"|"super"|"while"													{ col += yyleng; if (flag) { printf("RESERVED(%s)\n", yytext);} }
-
-"abstract"|"continue"|"for"|"new"|"switch"|
-"assert" | "default" | "goto" | "package" | "synchronized" |
-"private" | "this" | "++" | "--" | "null" |
-"break" | "double" | "implements" | "protected" | "throw" |
-"byte" | "else" | "import" | "public" | "throws" |
-"case" | "enum" | "instanceof" | "return" | "transient" |
-"catch" | "extends" | "int" | "short" | "try" |
-"char" | "final" | "interface" | "static" | "void" |
-"finally" | "long" | "strictfp" | "volatile" |
-"const" | "float" | "native" | "super" | "while"										{ col += yyleng; if (flag) { printf("RESERVED(%s)\n", yytext);} }
-
-\"([^"\n\r\\]|\\[fnrt\"\\])*\"																			{ if (flag) { col += yyleng; printf("STRLIT(%s)\n", yytext);} }
-\"([^"\n\r\\]|\\.)*\"																								{ if (flag) { printf("Line %d, col %d: invalid escape sequence (%s)\n", line, col, yytext);} col += yyleng; }
-\"([^"\n\r])*																												{ if (flag) { printf("Line %d, col %d: unterminated string literal\n", line, col);} col += yyleng; }
 
 */
 
