@@ -22,7 +22,8 @@ boolean
 false
 true
 
-
++1
+-1
 0
 0123
 1
@@ -36,6 +37,7 @@ true
 
 .012
 .0_0
+.123__54
 
 .22e1
 .22e11
@@ -46,11 +48,11 @@ true
 .22e-2_2
 
 .22e+3
-.22e+33
+.22e+033
 .22e+3_3
 
 22e1
-22e11
+22E11.1
 22e1_1
 
 22e-2
@@ -66,6 +68,7 @@ true
 11.1
 11.11e2
 
+12_3.21_5e22_8
 11.1.1
 
 $asd
@@ -83,11 +86,13 @@ AS_AaBa
 
 "asds ad$asdsa"
 
-"asdsaddsd"+"asmdkas
-"asdsa"+"sad\aasddakm"
+"as\"dsaddsd"+"asmdkas
+"asdsa"+"sad\aasddakm
 
+"asd"
 //njknjknjnjk
 /* jhbhjbhjbhb*/
 /**/
 +
+"sad\0ddd" "asd\1"
 + /*asdada\assdad
