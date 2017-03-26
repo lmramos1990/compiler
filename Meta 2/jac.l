@@ -1,18 +1,22 @@
-number  	[0-9]
+digit	  	[0-9]
 letter   	[a-zA-Z]
 text   		[a-zA-Z0-9]
-%{
-	#include <string.h>
+number		{digit}({digit}|_)*{digit}|{digit}
 
-	int flagM1 = 0, flagM2 = 1, col = 1, line = 1, colAux, lineAux;
+%{
+	#include "tree.h"
+	#include "y.tab.h"
+
+	Node *tree;
+	int flagM1 = 0, flagM2 = 0, col = 1, line = 1, colAux, lineAux;
 %}
 
-%X COMMENT_MULTI STRING
+%X COMMENT_MULTI STR
 
 %%
 
 "boolean" 												{ col += yyleng; if (flagM1) { printf("BOOL\n");} 					if (flagM2) { return BOOL;} }
-"true"|"false"											{ col += yyleng; if (flagM1) { printf("BOOLLIT(%s)\n", yytext);} 	if (flagM2) { return BOOLLIT;} }
+"true"|"false"											{ col += yyleng; if (flagM1) { printf("BOOLLIT(%s)\n", yytext);} 	if (flagM2) { yylval.value = strdup(yytext); return BOOLLIT;} }
 "class"													{ col += yyleng; if (flagM1) { printf("CLASS\n");} 					if (flagM2) { return CLASS;} }
 "do"													{ col += yyleng; if (flagM1) { printf("DO\n");} 					if (flagM2) { return DO;} }
 ".length"												{ col += yyleng; if (flagM1) { printf("DOTLENGTH\n");} 				if (flagM2) { return DOTLENGTH;} }
@@ -58,54 +62,44 @@ text   		[a-zA-Z0-9]
 
 "/*"													{ lineAux = line; 	colAux = col; 	col += yyleng; 	BEGIN COMMENT_MULTI; }
 <COMMENT_MULTI>"*/"										{ col += yyleng; 	BEGIN 0; }
-<COMMENT_MULTI>\r|\n|\r\n								{ line++; 			col = 1; }
+<COMMENT_MULTI>\n|\r|\r\n								{ line++; 			col = 1; }
 <COMMENT_MULTI>"*"										{ col++; }
 <COMMENT_MULTI>[^*\r\n]*								{ col += yyleng; }
 <COMMENT_MULTI><<EOF>>									{ printf("Line %d, col %d: unterminated comment\n", lineAux, colAux); yyterminate(); }
 
-({letter}|[_$])({text}|[_$])*							{ col += yyleng;	if (flagM1) { printf("ID(%s)\n", yytext);}		if (flagM2) { return ID;} }
+({letter}|[_$])({text}|[_$])*							{ col += yyleng;	if (flagM1) { printf("ID(%s)\n", yytext);}		if (flagM2) { yylval.value = strdup(yytext); return ID;} }
 
-{number}|[1-9]({number}|_)*{number}						{ col += yyleng;	if (flagM1) { printf("DECLIT(%s)\n", yytext);}	if (flagM2) { return DECLIT;} }
+{digit}|[1-9]({digit}|_)*{digit}						{ col += yyleng;	if (flagM1) { printf("DECLIT(%s)\n", yytext);}	if (flagM2) { yylval.value = strdup(yytext); return DECLIT;} }
 
-([0-9]([0-9]|_)*[0-9]|[0-9])(\.(([0-9]([0-9]|_)*[0-9]|[0-9])?([eE][+-]?([0-9]([0-9]|_)*[0-9]|[0-9]))?)?|([eE][+-]?([0-9]([0-9]|_)*[0-9]|[0-9])))|\.([0-9]([0-9]|_)*[0-9]|[0-9])([eE][+-]?([0-9]([0-9]|_)*[0-9]|[0-9]))?		{ col += yyleng; if (flagM1) { printf("REALLIT(%s)\n", yytext);}	if (flagM2) { return REALLIT;} }
+{number}(\.({number}?([eE][+-]?{number})?)?|([eE][+-]?{number}))|\.{number}([eE][+-]?{number})?		{ col += yyleng; if (flagM1) { printf("REALLIT(%s)\n", yytext);}	if (flagM2) { yylval.value = strdup(yytext); return REALLIT;} }
 
-\"([^"\n\r\\]|(\\[fnrt\"\\]))*\"						{ col += yyleng;	if (flagM1) { printf("STRLIT(%s)\n", yytext);}	if (flagM2) { return STRLIT;} }
-\"														{ colAux = col++; 	BEGIN STRING; }
-<STRING>\"												{ col++; 			BEGIN 0;}
-<STRING>([^"\n\r\\]|\\[fnrt\"\\])*						{ col += yyleng; }
-<STRING>\\(.?)											{ printf("Line %d, col %d: invalid escape sequence (%s)\n", line, col, yytext);	col += yyleng; }
-<STRING>\r\n|\n|\r										{ printf("Line %d, col %d: unterminated string literal\n", line, colAux); 		line++;		col = 1;	BEGIN 0; }
-<STRING><<EOF>>											{ printf("Line %d, col %d: unterminated string literal\n", line, colAux); 		yyterminate(); }
+\"([^"\n\r\\]|(\\[fnrt"\\]))*\"							{ col += yyleng;	if (flagM1) { printf("STRLIT(%s)\n", yytext);}	if (flagM2) { yylval.value = strdup(yytext); return STRLIT;} }
+\"														{ colAux = col++; 	BEGIN STR; }
+<STR>\"													{ col++; 			BEGIN 0;}
+<STR>([^"\n\r\\]|\\[fnrt"\\])*							{ col += yyleng; }
+<STR>\\(.?)												{ printf("Line %d, col %d: invalid escape sequence (%s)\n", line, col, yytext);	col += yyleng; }
+<STR>\r\n|\n|\r											{ printf("Line %d, col %d: unterminated string literal\n", line, colAux); 		line++;		col = 1;	BEGIN 0; }
+<STR><<EOF>>											{ printf("Line %d, col %d: unterminated string literal\n", line, colAux); 		yyterminate(); }
 
 " "|\t|\f												{ col++; }
 \r\n|\n|\r												{ col = 1;	line++; }
+<<EOF>>													{ yyterminate(); }
 .														{ printf("Line %d, col %d: illegal character (%s)\n", line, col, yytext); col++; }
 
 %%
 
-/*
-{numero}(.{numero})*e[-+]{numero}																		{ printf("REALIT\n"); }
-({numero}|[1-9]({numero}|_)*{numero})"."({numero}|[1-9]({numero}|_)*{numero})
-({numero}|{numero}({numero}|_)*{numero})"." | "."({numero}|{numero}({numero}|_)*{numero})[eE][+-]?
-([0-9]([0-9]|_)*[0-9]|[0-9])(\.(([0-9]([0-9]|_)*[0-9]|[0-9])?([eE][+-]?([0-9]([0-9]|_)*[0-9]|[0-9]))?)?|([eE][+-]?([0-9]([0-9]|_)*[0-9]|[0-9])))|\.([0-9]([0-9]|_)*[0-9]|[0-9])([eE][+-]?([0-9]([0-9]|_)*[0-9]|[0-9]))?
-
-*/
-
-
 int main(int argc, char** argv) {
 	if (argc > 1) {
-		/*if (strcmp(argv[1], "-1") == 0)
-			flagM1 = 0;*/
 		if (strcmp(argv[1], "-l") == 0)
 			flagM1 = 1;
-
 		yylex();			/* call Lex entry point */
 	} else {
 		flagM2 = 1;
 		yyparse();
+		printTree(tree, 0);
 	}
 
-	col = line = 1;
+	yylex_destroy();
 
 	return 0;
 }
@@ -114,6 +108,9 @@ int yywrap() {
 	return 1;			/* Esta funcao sera chamada quando o input chegar ao fim. Devolve 1 se nao houver mais nada a processar */
 }
 
-void yyerror (char *s) {
-	printf ("Line %d, col %d: %s: %s\n", line, col, s, yytext);
+void yyerror (const char *s) {
+	if (strcmp(yytext, "") != 0)
+		printf ("Line %d, col %d: %s: %s\n", line, col - (int) yyleng, s, yytext);
+	else
+		printf ("Line %d, col %d: %s: %s\n", line, col, s, yytext);
 }

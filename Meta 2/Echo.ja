@@ -1,0 +1,6 @@
+class teste {
+    ;
+    public static int a, b,c,d,e;
+    ;
+    public static int z,x,c,v;
+}
