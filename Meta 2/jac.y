@@ -6,6 +6,10 @@
     void yyerror(const char *s);
 
     extern Node *tree;
+    Node *auxNode;
+    extern char *auxType;
+    extern int flagError;
+    int stm2 = 0;
 %}
 
 %union {
@@ -22,8 +26,8 @@
 %token <value> REALLIT
 %token <value> STRLIT
 
-%left '=' NEQ
-%left AND OR EQ
+%left '='
+%left AND OR EQ NEQ
 %left LEQ GEQ '>' '<'
 %left '+' '-'
 %left '*' '/' '%' '!'
@@ -41,155 +45,155 @@
 %%
 
 Program:
-        CLASS ID '{' ProgramContent '}'                 { $$ = createNode("Program", NULL, createNode("Id", $2, $4, 's'), 'c'); tree = $$; }
+        CLASS ID '{' ProgramContent '}'                 { if (flagError == 0) { $$ = createNode("Program", NULL, createNode("Id", $2, $4, 's'), 'c'); tree = $$; } }
     ;
 
 ProgramContent:
-        FieldDecl ProgramContent                        { $1->next = $2; $$ = $1; }
-    |   MethodDecl ProgramContent                       { $1->next = $2; $$ = $1; }
-    |   ';' ProgramContent                              { $$ = $2; }
-    |   %empty                                          { $$ = NULL; }
+        FieldDecl ProgramContent                        { if (flagError == 0) { auxNode = $1; while(auxNode->next != NULL) { auxNode = auxNode->next; }; auxNode->next = $2; $$ = $1; } }
+    |   MethodDecl ProgramContent                       { if (flagError == 0) { $1->next = $2; $$ = $1; } }
+    |   ';' ProgramContent                              { if (flagError == 0) { $$ = $2; } }
+    |   %empty                                          { if (flagError == 0) { $$ = NULL; } }
     ;
 
 FieldDecl:
-        PUBLIC STATIC Type ID FieldDeclContent ';'      { $3->next = createNode("Id", $4, $5, 's'); $$ = createNode("FieldDecl", NULL, $3, 'c'); }
-    |   error ';'
+        PUBLIC STATIC Type ID FieldDeclContent ';'      { if (flagError == 0) { $3->next = createNode("Id", $4, NULL, 0); $$ = createNode("FieldDecl", NULL, $3, 'c'); $$->next = $5; } }
+    |   error ';'                                       { flagError = 1; }
     ;
 
 FieldDeclContent:
-        ',' ID FieldDeclContent                         { $$ = createNode("Id", $2, $3, 's'); }
-    |   %empty                                          { $$ = NULL; }
+        ',' ID FieldDeclContent                         { if (flagError == 0) { $$ = createNode("FieldDecl", NULL, createNode(auxType, NULL, createNode("Id", $2, NULL, 0), 's'), 'c'); $$->next = $3; } }
+    |   %empty                                          { if (flagError == 0) { $$ = NULL; } }
     ;
 
 MethodDecl:
-        PUBLIC STATIC MethodHeader MethodBody           { $3->next = $4; $$ = createNode("MethodDecl", NULL, $3, 'c'); }
+        PUBLIC STATIC MethodHeader MethodBody           { if (flagError == 0) { $3->next = $4; $$ = createNode("MethodDecl", NULL, $3, 'c'); } }
     ;
 
 MethodHeader:
-        Type ID '(' ')'                                 { $1->next = createNode("Id", $2, NULL, 0); $$ = createNode("MethodHeader", NULL, $1, 'c'); }
-    |   VOID ID '(' ')'                                 { $$ = createNode("MethodHeader", NULL, createNode("Void", NULL, createNode("Id", $2, NULL, 0), 's'), 'c'); }
-    |   Type ID '(' FormalParams ')'                    { $1->next = createNode("Id", $2, $4, 's'); $$ = createNode("MethodHeader", NULL, $1, 'c'); }
-    |   VOID ID '(' FormalParams ')'                    { $$ = createNode("MethodHeader", NULL, createNode("Void", NULL, createNode("Id", $2, createNode("MethodParams", NULL, $4, 'c'), 's'), 's'), 'c'); }
+        Type ID '(' ')'                                 { if (flagError == 0) { $1->next = createNode("Id", $2, createNode("MethodParams", NULL, NULL, 0), 's'); $$ = createNode("MethodHeader", NULL, $1, 'c'); } }
+    |   VOID ID '(' ')'                                 { if (flagError == 0) { $$ = createNode("MethodHeader", NULL, createNode("Void", NULL, createNode("Id", $2, createNode("MethodParams", NULL, NULL, 0), 's'), 's'), 'c'); } }
+    |   Type ID '(' FormalParams ')'                    { if (flagError == 0) { $1->next = createNode("Id", $2, createNode("MethodParams", NULL, $4, 'c'), 's'); $$ = createNode("MethodHeader", NULL, $1, 'c'); } }
+    |   VOID ID '(' FormalParams ')'                    { if (flagError == 0) { $$ = createNode("MethodHeader", NULL, createNode("Void", NULL, createNode("Id", $2, createNode("MethodParams", NULL, $4, 'c'), 's'), 's'), 'c'); } }
     ;
 
 MethodBody:
-        '{' MethodBodyContent '}'                       { $$ = createNode("MethodBody", NULL, $2, 'c'); }
+        '{' MethodBodyContent '}'                       { if (flagError == 0) { $$ = createNode("MethodBody", NULL, $2, 'c'); } }
     ;
 
 MethodBodyContent:
-        VarDecl MethodBodyContent                       { $1->next = $2; $$ = $1; }
-    |   Statement MethodBodyContent                     { $1->next = $2; $$ = $1; }
-    |   %empty                                          { $$ = NULL; }
+        VarDecl MethodBodyContent                       { if (flagError == 0) { auxNode = $1; while(auxNode->next != NULL) { auxNode = auxNode->next; } auxNode->next = $2; $$ = $1; } }
+    |   Statement MethodBodyContent                     { if (flagError == 0) { if($1 != NULL) { if(stm2) { auxNode = $1; while(auxNode->next != NULL) { auxNode = auxNode->next; } auxNode->next = $2; $$ = createNode("Block", NULL, $1, 'c'); } else { $1->next = $2; $$ = $1; } } else { $$ = $2; } } }
+    |   %empty                                          { if (flagError == 0) { $$ = NULL; } }
     ;
 
 FormalParams:
-        Type ID FormalParamsContent                     { $1->next = createNode("Id", $2, $3, 's'); $$ = createNode("ParamDecl", NULL, $1, 'c'); }
-    |   STRING '[' ']' ID                               { $$ = createNode("ParamDecl", NULL, createNode("StringArray", NULL, createNode("Id", $4, NULL, 0), 's'), 'c'); }
+        Type ID FormalParamsContent                     { if (flagError == 0) { $1->next = createNode("Id", $2, NULL, 0); $$ = createNode("ParamDecl", NULL, $1, 'c'); $$->next = $3; } }
+    |   STRING '[' ']' ID                               { if (flagError == 0) { $$ = createNode("ParamDecl", NULL, createNode("StringArray", NULL, createNode("Id", $4, NULL, 0), 's'), 'c'); } }
     ;
 
 FormalParamsContent:
-        ',' Type ID FormalParamsContent                 { $2->next = createNode("Id", $3, $4, 's'); $$ = $2; }
-    |   %empty                                          { $$ = NULL; }
+        ',' Type ID FormalParamsContent                 { if (flagError == 0) { $2->next = createNode("Id", $3, NULL, 0); $$ = createNode("ParamDecl", NULL, $2, 'c'); $$->next = $4; } }
+    |   %empty                                          { if (flagError == 0) { $$ = NULL; } }
     ;
 
 VarDecl:
-        Type ID VarDeclContent ';'                      { $1->next = createNode("Id", $2, $3, 's'); $$ = createNode("VarDecl", NULL, $1, 'c'); }
+        Type ID VarDeclContent ';'                      { if (flagError == 0) { $1->next = createNode("Id", $2, NULL, 0); $$ = createNode("VarDecl", NULL, $1, 'c'); $$->next = $3; } }
     ;
 
 VarDeclContent:
-        ',' ID VarDeclContent                           { $$ = createNode("Id", $2, $3, 's'); }
-    |   %empty                                          { $$ = NULL; }
+        ',' ID VarDeclContent                           { if (flagError == 0) { $$ = createNode("VarDecl", NULL, createNode(auxType, NULL, createNode("Id", $2, NULL, 0), 's'), 'c'); $$->next = $3; } }
+    |   %empty                                          { if (flagError == 0) { $$ = NULL; } }
     ;
 
 Type:
-        BOOL                                            { $$ = createNode("Bool", NULL, NULL, 0); }
-    |   INT                                             { $$ = createNode("Int", NULL, NULL, 0); }
-    |   DOUBLE                                          { $$ = createNode("Double", NULL, NULL, 0); }
+        BOOL                                            { if (flagError == 0) { free(auxType); auxType = strdup("Bool"); $$ = createNode("Bool", NULL, NULL, 0); } }
+    |   INT                                             { if (flagError == 0) { free(auxType); auxType = strdup("Int"); $$ = createNode("Int", NULL, NULL, 0); } }
+    |   DOUBLE                                          { if (flagError == 0) { free(auxType); auxType = strdup("Double"); $$ = createNode("Double", NULL, NULL, 0); } }
     ;
 
 Statement:
-        error ';'
+        error ';'                                       { flagError = 1; }
 
-    |   '{' Statement2 '}'                              { $$ = createNode("Block", NULL, $2, 'c'); }
+    |   '{' Statement2 '}'                              { if (flagError == 0) { stm2 = 1; $$ = $2; } }
 
-    |   IF '(' Expr ')' Statement   %prec IFX           { $3->next = $5; $$ = createNode("If", NULL, $3, 'c'); }
-    |   IF '(' Expr ')' Statement ELSE Statement        { $3->next = $5; $5->next = $7; $$ = createNode("If", NULL, $3, 'c'); }
+    |   IF '(' Expr ')' Statement   %prec IFX           { if (flagError == 0) { stm2 = 0; if($5 != NULL && $5->next == NULL) { $3->next = $5; $5->next = createNode("Block", NULL, NULL, 0); $$ = createNode("If", NULL, $3, 'c'); } else { $3->next = createNode("Block", NULL, $5, 'c'); $3->next->next = createNode("Block", NULL, NULL, 0); $$ = createNode("If", NULL, $3, 'c'); } } }
+    |   IF '(' Expr ')' Statement ELSE Statement        { if (flagError == 0) { stm2 = 0; if($5 != NULL && $5->next == NULL) { $3->next = $5; if($7 != NULL && $7->next == NULL) { $5->next = $7; } else { $5->next = createNode("Block", NULL, $7, 'c'); } } else { $3->next = createNode("Block", NULL, $5, 'c'); if($7 != NULL && $7->next == NULL) { $3->next->next = $7; } else { $3->next->next = createNode("Block", NULL, $7, 'c'); } } $$ = createNode("If", NULL, $3, 'c'); } }
 
-    |   WHILE '(' Expr ')' Statement                    { $3->next = $5; $$ = createNode("While", NULL, $3, 'c'); }
-    |   DO Statement WHILE '(' Expr ')' ';'             { $2->next = $5; $$ = createNode("DoWhile", NULL, $2, 'c'); }
+    |   WHILE '(' Expr ')' Statement                    { if (flagError == 0) { stm2 = 0; if($5 != NULL && $5->next == NULL) { $3->next = $5; } else { $3->next = createNode("Block", NULL, $5, 'c'); } $$ = createNode("While", NULL, $3, 'c'); } }
+    |   DO Statement WHILE '(' Expr ')' ';'             { if (flagError == 0) { stm2 = 0; if($2 != NULL && $2->next == NULL) { $2->next = $5; $$ = createNode("DoWhile", NULL, $2, 'c'); } else { $$ = createNode("DoWhile", NULL, createNode("Block", NULL, $2, 'c'), 'c'); $$->child->next = $5; } } }
 
-    |   PRINT '(' Expr ')' ';'                          { $$ = createNode("Print", NULL, $3, 'c'); }
-    |   PRINT '(' STRLIT ')' ';'                        { $$ = createNode("Print", NULL, createNode("StrLit", $3, NULL, 0), 'c'); }
+    |   PRINT '(' Expr ')' ';'                          { if (flagError == 0) { $$ = createNode("Print", NULL, $3, 'c'); } }
+    |   PRINT '(' STRLIT ')' ';'                        { if (flagError == 0) { $$ = createNode("Print", NULL, createNode("StrLit", $3, NULL, 0), 'c'); } }
 
-    |   ';'                                             { $$ = NULL; }
-    |   Assignment ';'                                  { $$ = $1; }
-    |   MethodInvocation ';'                            { $$ = $1; }
-    |   ParseArgs ';'                                   { $$ = $1; }
+    |   ';'                                             { if (flagError == 0) { $$ = NULL; } }
+    |   Assignment ';'                                  { if (flagError == 0) { $$ = $1; } }
+    |   MethodInvocation ';'                            { if (flagError == 0) { $$ = $1; } }
+    |   ParseArgs ';'                                   { if (flagError == 0) { $$ = $1; } }
 
-    |   RETURN ';'                                      { $$ = createNode("Return", NULL, NULL, 0); }
-    |   RETURN Expr ';'                                 { $$ = createNode("Return", NULL, $2, 'c'); }
+    |   RETURN ';'                                      { if (flagError == 0) { $$ = createNode("Return", NULL, NULL, 0); } }
+    |   RETURN Expr ';'                                 { if (flagError == 0) { $$ = createNode("Return", NULL, $2, 'c'); } }
     ;
 
 Statement2:
-        Statement Statement2                            { $1->next = $2; $$ = $1; }
-    |   %empty                                          { $$ = NULL; }
+        Statement Statement2                            { if (flagError == 0) { if ($1 != NULL) { $1->next = $2; $$ = $1; } else {$$ = $2;} } }
+    |   %empty                                          { if (flagError == 0) { $$ = NULL; } }
     ;
 
 Assignment:
-        ID '=' Expr                                     { $$ = createNode("Assign", NULL, createNode("Id", $1, $3, 's'), 'c'); }
+        ID '=' Expr                                     { if (flagError == 0) { $$ = createNode("Assign", NULL, createNode("Id", $1, $3, 's'), 'c'); } }
     ;
 
 MethodInvocation:
-        ID '(' ')'                                      { $$ = createNode("Call", NULL, createNode("Id", $1, NULL, 0), 'c'); }
-    |   ID '(' Expr MethodInvocationContent ')'         { $3->next = $4; $$ = createNode("Call", NULL, createNode("Id", $1, $3, 's'), 'c'); }
-    |   ID '(' error ')'
+        ID '(' ')'                                      { if (flagError == 0) { $$ = createNode("Call", NULL, createNode("Id", $1, NULL, 0), 'c'); } }
+    |   ID '(' Expr MethodInvocationContent ')'         { if (flagError == 0) { $3->next = $4; $$ = createNode("Call", NULL, createNode("Id", $1, $3, 's'), 'c'); } }
+    |   ID '(' error ')'                                { flagError = 1; }
     ;
 
 MethodInvocationContent:
-        ',' Expr MethodInvocationContent                { $2->next = $3; $$ = $2; }
-    |   %empty                                          { $$ = NULL; }
+        ',' Expr MethodInvocationContent                { if (flagError == 0) { $2->next = $3; $$ = $2; } }
+    |   %empty                                          { if (flagError == 0) { $$ = NULL; } }
     ;
 
 ParseArgs:
-        PARSEINT '(' ID '[' Expr ']' ')'                { $$ = createNode("ParseArgs", NULL, createNode("Id", $3, $5, 's'), 'c'); }
-    |   PARSEINT '(' error ')'
+        PARSEINT '(' ID '[' Expr ']' ')'                { if (flagError == 0) { $$ = createNode("ParseArgs", NULL, createNode("Id", $3, $5, 's'), 'c'); } }
+    |   PARSEINT '(' error ')'                          { flagError = 1; }
     ;
 
 Expr:
-        '(' error ')'
+        '(' error ')'                                   { flagError = 1; }
 
-    |   Assignment                                      { $$ = $1; }
-    |   MethodInvocation                                { $$ = $1; }
-    |   ParseArgs                                       { $$ = $1; }
+    |   Assignment                                      { if (flagError == 0) { $$ = $1; } }
+    |   MethodInvocation                                { if (flagError == 0) { $$ = $1; } }
+    |   ParseArgs                                       { if (flagError == 0) { $$ = $1; } }
 
-    |   Expr AND Expr                                   { $1->next = $3; $$ = createNode("And", NULL, $1, 'c'); }
-    |   Expr OR Expr                                    { $1->next = $3; $$ = createNode("Or", NULL, $1, 'c'); }
+    |   Expr AND Expr                                   { if (flagError == 0) { $1->next = $3; $$ = createNode("And", NULL, $1, 'c'); } }
+    |   Expr OR Expr                                    { if (flagError == 0) { $1->next = $3; $$ = createNode("Or", NULL, $1, 'c'); } }
 
-    |   Expr EQ Expr                                    { $1->next = $3; $$ = createNode("Eq", NULL, $1, 'c'); }
-    |   Expr GEQ Expr                                   { $1->next = $3; $$ = createNode("Geq", NULL, $1, 'c'); }
-    |   Expr '>' Expr                                   { $1->next = $3; $$ = createNode("Gt", NULL, $1, 'c'); }
-    |   Expr LEQ Expr                                   { $1->next = $3; $$ = createNode("Leq", NULL, $1, 'c'); }
-    |   Expr '<' Expr                                   { $1->next = $3; $$ = createNode("Lt", NULL, $1, 'c'); }
-    |   Expr NEQ Expr                                   { $1->next = $3; $$ = createNode("Neq", NULL, $1, 'c'); }
+    |   Expr EQ Expr                                    { if (flagError == 0) { $1->next = $3; $$ = createNode("Eq", NULL, $1, 'c'); } }
+    |   Expr GEQ Expr                                   { if (flagError == 0) { $1->next = $3; $$ = createNode("Geq", NULL, $1, 'c'); } }
+    |   Expr '>' Expr                                   { if (flagError == 0) { $1->next = $3; $$ = createNode("Gt", NULL, $1, 'c'); } }
+    |   Expr LEQ Expr                                   { if (flagError == 0) { $1->next = $3; $$ = createNode("Leq", NULL, $1, 'c'); } }
+    |   Expr '<' Expr                                   { if (flagError == 0) { $1->next = $3; $$ = createNode("Lt", NULL, $1, 'c'); } }
+    |   Expr NEQ Expr                                   { if (flagError == 0) { $1->next = $3; $$ = createNode("Neq", NULL, $1, 'c'); } }
 
-    |   Expr '+' Expr                                   { $1->next = $3; $$ = createNode("Add", NULL, $1, 'c'); }
-    |   Expr '-' Expr                                   { $1->next = $3; $$ = createNode("Sub", NULL, $1, 'c'); }
-    |   Expr '*' Expr                                   { $1->next = $3; $$ = createNode("Mul", NULL, $1, 'c'); }
-    |   Expr '/' Expr                                   { $1->next = $3; $$ = createNode("Div", NULL, $1, 'c'); }
-    |   Expr '%' Expr                                   { $1->next = $3; $$ = createNode("Mod", NULL, $1, 'c'); }
+    |   Expr '+' Expr                                   { if (flagError == 0) { $1->next = $3; $$ = createNode("Add", NULL, $1, 'c'); } }
+    |   Expr '-' Expr                                   { if (flagError == 0) { $1->next = $3; $$ = createNode("Sub", NULL, $1, 'c'); } }
+    |   Expr '*' Expr                                   { if (flagError == 0) { $1->next = $3; $$ = createNode("Mul", NULL, $1, 'c'); } }
+    |   Expr '/' Expr                                   { if (flagError == 0) { $1->next = $3; $$ = createNode("Div", NULL, $1, 'c'); } }
+    |   Expr '%' Expr                                   { if (flagError == 0) { $1->next = $3; $$ = createNode("Mod", NULL, $1, 'c'); } }
 
-    |   '+' Expr                                        { $$ = createNode("Plus", NULL, $2, 'c'); }
-    |   '-' Expr                                        { $$ = createNode("Minus", NULL, $2, 'c'); }
-    |   '!' Expr                                        { $$ = createNode("Not", NULL, $2, 'c'); }
+    |   '+' Expr                                        { if (flagError == 0) { $$ = createNode("Plus", NULL, $2, 'c'); } }
+    |   '-' Expr                                        { if (flagError == 0) { $$ = createNode("Minus", NULL, $2, 'c'); } }
+    |   '!' Expr                                        { if (flagError == 0) { $$ = createNode("Not", NULL, $2, 'c'); } }
 
-    |   ID                                              { $$ = createNode("Id", $1, NULL, 0); }
-    |   ID DOTLENGTH                                    { $$ = createNode("Length", NULL, createNode("Id", $1, NULL, 0), 'c'); }
+    |   ID                                              { if (flagError == 0) { $$ = createNode("Id", $1, NULL, 0); } }
+    |   ID DOTLENGTH                                    { if (flagError == 0) { $$ = createNode("Length", NULL, createNode("Id", $1, NULL, 0), 'c'); } }
 
-    |   '(' Expr ')'                                    { $$ = $2; }
+    |   '(' Expr ')'                                    { if (flagError == 0) { $$ = $2; } }
 
-    |   BOOLLIT                                         { $$ = createNode("BoolLit", $1, NULL, 0); }
-    |   DECLIT                                          { $$ = createNode("DecLit", $1, NULL, 0); }
-    |   REALLIT                                         { $$ = createNode("RealLit", $1, NULL, 0); }
+    |   BOOLLIT                                         { if (flagError == 0) { $$ = createNode("BoolLit", $1, NULL, 0); } }
+    |   DECLIT                                          { if (flagError == 0) { $$ = createNode("DecLit", $1, NULL, 0); } }
+    |   REALLIT                                         { if (flagError == 0) { $$ = createNode("RealLit", $1, NULL, 0); } }
     ;
 
 %%

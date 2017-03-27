@@ -11,3 +11,4 @@ typedef struct tree_node {
 
 Node* createNode(char *typeNode, char *contentNode, Node *relatedNode, char relation);
 void printTree(Node *node, int depth);
+void destroyTree(Node *node);

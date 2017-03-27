@@ -7,8 +7,10 @@ number		{digit}({digit}|_)*{digit}|{digit}
 	#include "tree.h"
 	#include "y.tab.h"
 
-	Node *tree;
 	int flagM1 = 0, flagM2 = 0, col = 1, line = 1, colAux, lineAux;
+	Node *tree;
+	int flagError = 1;
+	char *auxType;
 %}
 
 %X COMMENT_MULTI STR
@@ -90,13 +92,27 @@ number		{digit}({digit}|_)*{digit}|{digit}
 
 int main(int argc, char** argv) {
 	if (argc > 1) {
-		if (strcmp(argv[1], "-l") == 0)
+		if (strcmp(argv[1], "-l") == 0) {
 			flagM1 = 1;
-		yylex();			/* call Lex entry point */
+			yylex();			/* call Lex entry point */
+		} else if (strcmp(argv[1], "-1") == 0) {
+			yylex();			/* call Lex entry point */
+		} else if (strcmp(argv[1], "-t") == 0) {
+			flagM2 = 1;
+			flagError = 0;
+			auxType = strdup("placeholder");
+
+			yyparse();
+
+			printTree(tree, 0);
+			destroyTree(tree);
+			free(auxType);
+		}
 	} else {
 		flagM2 = 1;
+		flagError = 1;
 		yyparse();
-		printTree(tree, 0);
+		destroyTree(tree);
 	}
 
 	yylex_destroy();

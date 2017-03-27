@@ -5,7 +5,7 @@ Node* createNode(char *typeNode, char *contentNode, Node *relatedNode, char rela
 
     newNode = (Node*) malloc(sizeof(Node));
 
-    newNode->type = typeNode;
+    newNode->type = strdup(typeNode);
     if (contentNode != NULL)
         newNode->content = contentNode;
     else
@@ -47,4 +47,19 @@ void printTree(Node *node, int depth) {
         printTree(node->child, depth + 1);
     if (node->next != NULL)
         printTree(node->next, depth);
+}
+
+void destroyTree(Node *node) {
+    if (node == NULL)
+        return;
+
+    if (node->next != NULL)
+        destroyTree(node->next);
+    if (node->child != NULL)
+        destroyTree(node->child);
+
+    free(node->type);
+    if (node->content != NULL)
+        free(node->content);
+    free(node);
 }
