@@ -13,7 +13,6 @@ class teste {
             print(b);
             print(a);
         } else {
-            ;;;;;
 
             print();
             print(a,b,c);
@@ -112,12 +111,25 @@ class teste {
         } while(a < b);
     }
     ;
+    public static void ifprec() {
+        if (a < b)
+            if (b < c)
+                b = c;
+        else
+            a = c;
+    }
+    ;
     public static void last(int FINAL) {
         {
             a = b;
-            b =c;
+            b = c;
+        }
+        int z,x;
+        {
+            print(a);
         }
     }
-
+    ;
     ?
+    public static int empty(){}
 }

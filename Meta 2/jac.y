@@ -9,7 +9,7 @@
     Node *auxNode;
     extern char *auxType;
     extern int flagError;
-    int stm2 = 0;
+    int flagAux = 0;
 %}
 
 %union {
@@ -26,13 +26,18 @@
 %token <value> REALLIT
 %token <value> STRLIT
 
-%left '='
-%left AND OR EQ NEQ
+%right '='
+%left OR
+%left AND
+%left EQ NEQ
 %left LEQ GEQ '>' '<'
 %left '+' '-'
-%left '*' '/' '%' '!'
+%left '*' '/' '%'
+%left '!'
 %nonassoc IFX
 %nonassoc ELSE
+%right UPLUS
+%right UMINUS
 
 
 
@@ -82,7 +87,8 @@ MethodBody:
 
 MethodBodyContent:
         VarDecl MethodBodyContent                       { if (flagError == 0) { auxNode = $1; while(auxNode->next != NULL) { auxNode = auxNode->next; } auxNode->next = $2; $$ = $1; } }
-    |   Statement MethodBodyContent                     { if (flagError == 0) { if($1 != NULL) { if(stm2) { auxNode = $1; while(auxNode->next != NULL) { auxNode = auxNode->next; } auxNode->next = $2; $$ = createNode("Block", NULL, $1, 'c'); } else { $1->next = $2; $$ = $1; } } else { $$ = $2; } } }
+/*    |   Statement MethodBodyContent                     { if (flagError == 0) { if($1 != NULL) { if(stm2) { stm2 = 0; auxNode = $1; while(auxNode->next != NULL) { auxNode = auxNode->next; } $$ = createNode("Block", NULL, $1, 'c'); $$->next = $2; } else { $1->next = $2; $$ = $1; } } else { $$ = $2; } } }*/
+    |   Statement MethodBodyContent                     { if (flagError == 0) { if($1 != NULL) { $1->next = $2; $$ = $1; } else {$$ = $2;} } }
     |   %empty                                          { if (flagError == 0) { $$ = NULL; } }
     ;
 
@@ -114,6 +120,8 @@ Type:
 Statement:
         error ';'                                       { flagError = 1; }
 
+    |   '{' Statement2 '}'                              { if (flagError == 0) { if($2 == NULL) { $$ = createNode("Block", NULL, NULL, 0); } else { if($2->next == NULL) { $$ = $2; } else { $$ = createNode("Block", NULL, $2, 'c'); } } } }
+/*
     |   '{' Statement2 '}'                              { if (flagError == 0) { stm2 = 1; $$ = $2; } }
 
     |   IF '(' Expr ')' Statement   %prec IFX           { if (flagError == 0) { stm2 = 0; if($5 != NULL && $5->next == NULL) { $3->next = $5; $5->next = createNode("Block", NULL, NULL, 0); $$ = createNode("If", NULL, $3, 'c'); } else { $3->next = createNode("Block", NULL, $5, 'c'); $3->next->next = createNode("Block", NULL, NULL, 0); $$ = createNode("If", NULL, $3, 'c'); } } }
@@ -121,6 +129,12 @@ Statement:
 
     |   WHILE '(' Expr ')' Statement                    { if (flagError == 0) { stm2 = 0; if($5 != NULL && $5->next == NULL) { $3->next = $5; } else { $3->next = createNode("Block", NULL, $5, 'c'); } $$ = createNode("While", NULL, $3, 'c'); } }
     |   DO Statement WHILE '(' Expr ')' ';'             { if (flagError == 0) { stm2 = 0; if($2 != NULL && $2->next == NULL) { $2->next = $5; $$ = createNode("DoWhile", NULL, $2, 'c'); } else { $$ = createNode("DoWhile", NULL, createNode("Block", NULL, $2, 'c'), 'c'); $$->child->next = $5; } } }
+*/
+    |   IF '(' Expr ')' Statement   %prec IFX           { if (flagError == 0) { if($5 != NULL) { $3->next = $5; $5->next = createNode("Block", NULL, NULL, 0); } else { $3->next = createNode("Block", NULL, createNode("Block", NULL, NULL, 0), 's'); } $$ = createNode("If", NULL, $3, 'c'); } }
+    |   IF '(' Expr ')' Statement ELSE Statement        { if (flagError == 0) { if($5 != NULL) { if($7 != NULL) { $3->next = $5; $5->next = $7; } else { $3->next = $5; $5->next = createNode("Block", NULL, NULL, 0); } } else { if ($7 != NULL) { $3->next = createNode("Block", NULL, $7, 's'); } else { $3->next = createNode("Block", NULL, createNode("Block", NULL, NULL, 0), 's'); } } $$ = createNode("If", NULL, $3, 'c'); } }
+
+    |   WHILE '(' Expr ')' Statement                    { if (flagError == 0) { if($5 != NULL) { $3->next = $5; } else { $3->next = createNode("Block", NULL, NULL, 0); } $$ = createNode("While", NULL, $3, 'c'); } }
+    |   DO Statement WHILE '(' Expr ')' ';'             { if (flagError == 0) { if($2 != NULL) { $2->next = $5; $$ = createNode("DoWhile", NULL, $2, 'c'); } else { $$ = createNode("DoWhile", NULL, createNode("Block", NULL, $5, 's'), 'c'); } } }
 
     |   PRINT '(' Expr ')' ';'                          { if (flagError == 0) { $$ = createNode("Print", NULL, $3, 'c'); } }
     |   PRINT '(' STRLIT ')' ';'                        { if (flagError == 0) { $$ = createNode("Print", NULL, createNode("StrLit", $3, NULL, 0), 'c'); } }
@@ -135,10 +149,16 @@ Statement:
     ;
 
 Statement2:
-        Statement Statement2                            { if (flagError == 0) { if ($1 != NULL) { $1->next = $2; $$ = $1; } else {$$ = $2;} } }
+/*        Statement Statement2                            { if (flagError == 0) { if($1 != NULL) { if($2 != NULL) { if(strcmp($2->type, "Block") != 0) { $1->next = $2; $$ = createNode("Block", NULL, $1, 'c'); } else { $1->next = $2->next; $2->next = $1; $$ = $2; } } else { $$ = $1; } } else {$$ = $2;} } }*/
+        Statement Statement2                            { if (flagError == 0) { if($1 != NULL) { $1->next = $2; $$ = $1; } else {$$ = $2;} } }
     |   %empty                                          { if (flagError == 0) { $$ = NULL; } }
     ;
-
+/*
+Statement2:
+        Statement Statement2                            { if (flagError == 0) { if($1 != NULL) { $1->next = $2; $$ = $1; } else {$$ = $2;} } }
+    |   %empty                                          { if (flagError == 0) { $$ = NULL; } }
+    ;
+*/
 Assignment:
         ID '=' Expr                                     { if (flagError == 0) { $$ = createNode("Assign", NULL, createNode("Id", $1, $3, 's'), 'c'); } }
     ;
@@ -182,8 +202,8 @@ Expr:
     |   Expr '/' Expr                                   { if (flagError == 0) { $1->next = $3; $$ = createNode("Div", NULL, $1, 'c'); } }
     |   Expr '%' Expr                                   { if (flagError == 0) { $1->next = $3; $$ = createNode("Mod", NULL, $1, 'c'); } }
 
-    |   '+' Expr                                        { if (flagError == 0) { $$ = createNode("Plus", NULL, $2, 'c'); } }
-    |   '-' Expr                                        { if (flagError == 0) { $$ = createNode("Minus", NULL, $2, 'c'); } }
+    |   '+' Expr        %prec UPLUS                     { if (flagError == 0) { $$ = createNode("Plus", NULL, $2, 'c'); } }
+    |   '-' Expr        %prec UMINUS                    { if (flagError == 0) { $$ = createNode("Minus", NULL, $2, 'c'); } }
     |   '!' Expr                                        { if (flagError == 0) { $$ = createNode("Not", NULL, $2, 'c'); } }
 
     |   ID                                              { if (flagError == 0) { $$ = createNode("Id", $1, NULL, 0); } }
