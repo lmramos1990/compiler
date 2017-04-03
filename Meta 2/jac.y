@@ -58,7 +58,7 @@ ProgramContent:
 
 FieldDecl:
         PUBLIC STATIC Type ID FieldDeclContent ';'      { if (flagError == 0) { $3->next = createNode("Id", $4, NULL, 0); $$ = createNode("FieldDecl", NULL, $3, 'c'); $$->next = $5; } }
-    |   error ';'                                       { flagError = 1; }
+    |   error ';'                                       { flagError = 1; $$ = createNode("Dummy", NULL, NULL, 0); }
     ;
 
 FieldDeclContent:
@@ -113,7 +113,7 @@ Type:
     ;
 
 Statement:
-        error ';'                                       { flagError = 1; }
+        error ';'                                       { flagError = 1; $$ = createNode("Dummy", NULL, NULL, 0); }
 
     |   '{' Statement2 '}'                              { if (flagError == 0) { if($2 == NULL) { $$ = $2; } else { if($2->next == NULL) { $$ = $2; } else { $$ = createNode("Block", NULL, $2, 'c'); } } } }
 
@@ -141,13 +141,13 @@ Statement2:
     ;
 
 Assignment:
-        ID '=' Expr                                     { if (flagError == 0) { $$ = createNode("Assign", NULL, createNode("Id", $1, $3, 's'), 'c'); } }
+        ID '=' Expr2                                    { if (flagError == 0) { $$ = createNode("Assign", NULL, createNode("Id", $1, $3, 's'), 'c'); } }
     ;
 
 MethodInvocation:
         ID '(' ')'                                      { if (flagError == 0) { $$ = createNode("Call", NULL, createNode("Id", $1, NULL, 0), 'c'); } }
     |   ID '(' Expr2 MethodInvocationContent ')'        { if (flagError == 0) { $3->next = $4; $$ = createNode("Call", NULL, createNode("Id", $1, $3, 's'), 'c'); } }
-    |   ID '(' error ')'                                { flagError = 1; }
+    |   ID '(' error ')'                                { flagError = 1; $$ = createNode("Dummy", NULL, NULL, 0); }
     ;
 
 MethodInvocationContent:
@@ -157,7 +157,7 @@ MethodInvocationContent:
 
 ParseArgs:
         PARSEINT '(' ID '[' Expr2 ']' ')'               { if (flagError == 0) { $$ = createNode("ParseArgs", NULL, createNode("Id", $3, $5, 's'), 'c'); } }
-    |   PARSEINT '(' error ')'                          { flagError = 1; }
+    |   PARSEINT '(' error ')'                          { flagError = 1; $$ = createNode("Dummy", NULL, NULL, 0); }
     ;
 
 Expr2:
@@ -166,7 +166,7 @@ Expr2:
     ;
 
 Expr:
-        '(' error ')'                                   { flagError = 1; }
+        '(' error ')'                                   { flagError = 1; $$ = createNode("Dummy", NULL, NULL, 0); }
 
     |   MethodInvocation                                { if (flagError == 0) { $$ = $1; } }
     |   ParseArgs                                       { if (flagError == 0) { $$ = $1; } }
@@ -194,7 +194,7 @@ Expr:
     |   ID                                              { if (flagError == 0) { $$ = createNode("Id", $1, NULL, 0); } }
     |   ID DOTLENGTH                                    { if (flagError == 0) { $$ = createNode("Length", NULL, createNode("Id", $1, NULL, 0), 'c'); } }
 
-    |   '(' Expr ')'                                    { if (flagError == 0) { $$ = $2; } }
+    |   '(' Expr2 ')'                                    { if (flagError == 0) { $$ = $2; } }
 
     |   BOOLLIT                                         { if (flagError == 0) { $$ = createNode("BoolLit", $1, NULL, 0); } }
     |   DECLIT                                          { if (flagError == 0) { $$ = createNode("DecLit", $1, NULL, 0); } }

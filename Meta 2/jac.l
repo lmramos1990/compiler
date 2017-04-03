@@ -104,7 +104,8 @@ int main(int argc, char** argv) {
 
 			yyparse();
 
-			printTree(tree, 0);
+			if (!flagError)
+				printTree(tree, 0);
 			destroyTree(tree);
 			free(auxType);
 		}
