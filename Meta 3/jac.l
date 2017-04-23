@@ -11,6 +11,7 @@ number		{digit}({digit}|_)*{digit}|{digit}
 	Node *tree;
 	int flagError = 1;
 	char *auxType;
+	Table *table;
 %}
 
 %X COMMENT_MULTI STR
@@ -109,6 +110,9 @@ int main(int argc, char** argv) {
 			if (strcmp(argv[1], "-s") == 0)
 				; /* passar tree e fazer analise semantica  */
 
+			table = semanticAnalysis(tree);
+			printTable(table);
+
 			destroyTree(tree);
 			free(auxType);
 		}
@@ -117,6 +121,9 @@ int main(int argc, char** argv) {
 		auxType = strdup("placeholder");
 
 		yyparse();
+
+		table = semanticAnalysis(tree);
+		printTable(table);
 
 		destroyTree(tree);
 		free(auxType);
