@@ -1,6 +1,6 @@
 %{
     #include <string.h>
-    #include "tree.h"
+    #include "structs.h"
 
     int yylex(void);
     void yyerror(const char *s);

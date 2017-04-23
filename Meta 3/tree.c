@@ -1,4 +1,4 @@
-#include "tree.h"
+#include "structs.h"
 
 Node* createNode(char *typeNode, char *contentNode, Node *relatedNode, char relation) {
     Node *newNode;

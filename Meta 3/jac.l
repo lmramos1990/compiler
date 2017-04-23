@@ -4,7 +4,7 @@ text   		[a-zA-Z0-9]
 number		{digit}({digit}|_)*{digit}|{digit}
 
 %{
-	#include "tree.h"
+	#include "structs.h"
 	#include "y.tab.h"
 
 	int flagM1 = 0, flagM2 = 0, col = 1, line = 1, colAux, lineAux;
