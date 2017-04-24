@@ -8,10 +8,10 @@ number		{digit}({digit}|_)*{digit}|{digit}
 	#include "y.tab.h"
 
 	int flagM1 = 0, flagM2 = 0, col = 1, line = 1, colAux, lineAux;
-	Node *tree;
+	ASTNode *tree;
 	int flagError = 1;
 	char *auxType;
-	Table *table;
+	SymbolTableNode *table;
 %}
 
 %X COMMENT_MULTI STR
@@ -106,14 +106,18 @@ int main(int argc, char** argv) {
 			yyparse();
 
 			if (!flagError && (strcmp(argv[1], "-t") == 0))
-				printTree(tree, 0);
-			if (strcmp(argv[1], "-s") == 0)
-				; /* passar tree e fazer analise semantica  */
+				printTrees(tree, 0, 0);
 
 			table = semanticAnalysis(tree);
 			printTable(table);
 
-			destroyTree(tree);
+			ASTSemanticAnnotations(tree, table);
+			if (strcmp(argv[1], "-s") == 0) {
+				printTrees(tree, 0, 1);
+			}
+
+			destroySymbolTable(table);
+			destroyAST(tree);
 			free(auxType);
 		}
 	} else {
@@ -125,7 +129,10 @@ int main(int argc, char** argv) {
 		table = semanticAnalysis(tree);
 		printTable(table);
 
-		destroyTree(tree);
+		//ASTSemanticAnnotations(tree, table);
+
+		destroySymbolTable(table);
+		destroyAST(tree);
 		free(auxType);
 	}
 

@@ -5,8 +5,8 @@
     int yylex(void);
     void yyerror(const char *s);
 
-    extern Node *tree;
-    Node *auxNode;
+    extern ASTNode *tree;
+    ASTNode *auxNode;
     extern char *auxType;
     extern int flagError;
     int flagAux = 0;
@@ -14,7 +14,7 @@
 
 %union {
 	char *value;
-	Node *node;
+	ASTNode *node;
 }
 
 %token BOOL CLASS DO DOTLENGTH DOUBLE ELSE IF INT PARSEINT PRINT PUBLIC RETURN STATIC STRING VOID WHILE
@@ -46,7 +46,7 @@
 %%
 
 Program:
-        CLASS ID '{' ProgramContent '}'                 {  $$ = createNode("Program", NULL, createNode("Id", $2, $4, 's'), 'c'); tree = $$; }
+        CLASS ID '{' ProgramContent '}'                 {  $$ = createASTNode("Program", NULL, createASTNode("Id", $2, $4, 's'), 'c'); tree = $$; }
     ;
 
 ProgramContent:
@@ -57,28 +57,28 @@ ProgramContent:
     ;
 
 FieldDecl:
-        PUBLIC STATIC Type ID FieldDeclContent ';'      {  $3->next = createNode("Id", $4, NULL, 0); $$ = createNode("FieldDecl", NULL, $3, 'c'); $$->next = $5; }
-    |   error ';'                                       { flagError = 1; $$ = createNode("Dummy", NULL, NULL, 0); }
+        PUBLIC STATIC Type ID FieldDeclContent ';'      {  $3->next = createASTNode("Id", $4, NULL, 0); $$ = createASTNode("FieldDecl", NULL, $3, 'c'); $$->next = $5; }
+    |   error ';'                                       { flagError = 1; $$ = createASTNode("Dummy", NULL, NULL, 0); }
     ;
 
 FieldDeclContent:
-        ',' ID FieldDeclContent                         {  $$ = createNode("FieldDecl", NULL, createNode(auxType, NULL, createNode("Id", $2, NULL, 0), 's'), 'c'); $$->next = $3; }
+        ',' ID FieldDeclContent                         {  $$ = createASTNode("FieldDecl", NULL, createASTNode(auxType, NULL, createASTNode("Id", $2, NULL, 0), 's'), 'c'); $$->next = $3; }
     |   %empty                                          {  $$ = NULL; }
     ;
 
 MethodDecl:
-        PUBLIC STATIC MethodHeader MethodBody           {  $3->next = $4; $$ = createNode("MethodDecl", NULL, $3, 'c'); }
+        PUBLIC STATIC MethodHeader MethodBody           {  $3->next = $4; $$ = createASTNode("MethodDecl", NULL, $3, 'c'); }
     ;
 
 MethodHeader:
-        Type ID '(' ')'                                 {  $1->next = createNode("Id", $2, createNode("MethodParams", NULL, NULL, 0), 's'); $$ = createNode("MethodHeader", NULL, $1, 'c'); }
-    |   VOID ID '(' ')'                                 {  $$ = createNode("MethodHeader", NULL, createNode("Void", NULL, createNode("Id", $2, createNode("MethodParams", NULL, NULL, 0), 's'), 's'), 'c'); }
-    |   Type ID '(' FormalParams ')'                    {  $1->next = createNode("Id", $2, createNode("MethodParams", NULL, $4, 'c'), 's'); $$ = createNode("MethodHeader", NULL, $1, 'c'); }
-    |   VOID ID '(' FormalParams ')'                    {  $$ = createNode("MethodHeader", NULL, createNode("Void", NULL, createNode("Id", $2, createNode("MethodParams", NULL, $4, 'c'), 's'), 's'), 'c'); }
+        Type ID '(' ')'                                 {  $1->next = createASTNode("Id", $2, createASTNode("MethodParams", NULL, NULL, 0), 's'); $$ = createASTNode("MethodHeader", NULL, $1, 'c'); }
+    |   VOID ID '(' ')'                                 {  $$ = createASTNode("MethodHeader", NULL, createASTNode("Void", NULL, createASTNode("Id", $2, createASTNode("MethodParams", NULL, NULL, 0), 's'), 's'), 'c'); }
+    |   Type ID '(' FormalParams ')'                    {  $1->next = createASTNode("Id", $2, createASTNode("MethodParams", NULL, $4, 'c'), 's'); $$ = createASTNode("MethodHeader", NULL, $1, 'c'); }
+    |   VOID ID '(' FormalParams ')'                    {  $$ = createASTNode("MethodHeader", NULL, createASTNode("Void", NULL, createASTNode("Id", $2, createASTNode("MethodParams", NULL, $4, 'c'), 's'), 's'), 'c'); }
     ;
 
 MethodBody:
-        '{' MethodBodyContent '}'                       {  $$ = createNode("MethodBody", NULL, $2, 'c'); }
+        '{' MethodBodyContent '}'                       {  $$ = createASTNode("MethodBody", NULL, $2, 'c'); }
     ;
 
 MethodBodyContent:
@@ -88,51 +88,51 @@ MethodBodyContent:
     ;
 
 FormalParams:
-        Type ID FormalParamsContent                     {  $1->next = createNode("Id", $2, NULL, 0); $$ = createNode("ParamDecl", NULL, $1, 'c'); $$->next = $3; }
-    |   STRING '[' ']' ID                               {  $$ = createNode("ParamDecl", NULL, createNode("StringArray", NULL, createNode("Id", $4, NULL, 0), 's'), 'c'); }
+        Type ID FormalParamsContent                     {  $1->next = createASTNode("Id", $2, NULL, 0); $$ = createASTNode("ParamDecl", NULL, $1, 'c'); $$->next = $3; }
+    |   STRING '[' ']' ID                               {  $$ = createASTNode("ParamDecl", NULL, createASTNode("StringArray", NULL, createASTNode("Id", $4, NULL, 0), 's'), 'c'); }
     ;
 
 FormalParamsContent:
-        ',' Type ID FormalParamsContent                 {  $2->next = createNode("Id", $3, NULL, 0); $$ = createNode("ParamDecl", NULL, $2, 'c'); $$->next = $4; }
+        ',' Type ID FormalParamsContent                 {  $2->next = createASTNode("Id", $3, NULL, 0); $$ = createASTNode("ParamDecl", NULL, $2, 'c'); $$->next = $4; }
     |   %empty                                          {  $$ = NULL; }
     ;
 
 VarDecl:
-        Type ID VarDeclContent ';'                      {  $1->next = createNode("Id", $2, NULL, 0); $$ = createNode("VarDecl", NULL, $1, 'c'); $$->next = $3; }
+        Type ID VarDeclContent ';'                      {  $1->next = createASTNode("Id", $2, NULL, 0); $$ = createASTNode("VarDecl", NULL, $1, 'c'); $$->next = $3; }
     ;
 
 VarDeclContent:
-        ',' ID VarDeclContent                           {  $$ = createNode("VarDecl", NULL, createNode(auxType, NULL, createNode("Id", $2, NULL, 0), 's'), 'c'); $$->next = $3; }
+        ',' ID VarDeclContent                           {  $$ = createASTNode("VarDecl", NULL, createASTNode(auxType, NULL, createASTNode("Id", $2, NULL, 0), 's'), 'c'); $$->next = $3; }
     |   %empty                                          {  $$ = NULL; }
     ;
 
 Type:
-        BOOL                                            {  free(auxType); auxType = strdup("Bool"); $$ = createNode("Bool", NULL, NULL, 0); }
-    |   INT                                             {  free(auxType); auxType = strdup("Int"); $$ = createNode("Int", NULL, NULL, 0); }
-    |   DOUBLE                                          {  free(auxType); auxType = strdup("Double"); $$ = createNode("Double", NULL, NULL, 0); }
+        BOOL                                            {  free(auxType); auxType = strdup("Bool"); $$ = createASTNode("Bool", NULL, NULL, 0); }
+    |   INT                                             {  free(auxType); auxType = strdup("Int"); $$ = createASTNode("Int", NULL, NULL, 0); }
+    |   DOUBLE                                          {  free(auxType); auxType = strdup("Double"); $$ = createASTNode("Double", NULL, NULL, 0); }
     ;
 
 Statement:
-        error ';'                                       { flagError = 1; $$ = createNode("Dummy", NULL, NULL, 0); }
+        error ';'                                       { flagError = 1; $$ = createASTNode("Dummy", NULL, NULL, 0); }
 
-    |   '{' Statement2 '}'                              {  if($2 == NULL) { $$ = $2; } else { if($2->next == NULL) { $$ = $2; } else { $$ = createNode("Block", NULL, $2, 'c'); } } }
+    |   '{' Statement2 '}'                              {  if($2 == NULL) { $$ = $2; } else { if($2->next == NULL) { $$ = $2; } else { $$ = createASTNode("Block", NULL, $2, 'c'); } } }
 
-    |   IF '(' Expr2 ')' Statement   %prec IFX          {  if($5 != NULL) { $3->next = $5; $5->next = createNode("Block", NULL, NULL, 0); } else { $3->next = createNode("Block", NULL, createNode("Block", NULL, NULL, 0), 's'); } $$ = createNode("If", NULL, $3, 'c'); }
-    |   IF '(' Expr2 ')' Statement ELSE Statement       {  if($5 != NULL) { if($7 != NULL) { $3->next = $5; $5->next = $7; } else { $3->next = $5; $5->next = createNode("Block", NULL, NULL, 0); } } else { if ($7 != NULL) { $3->next = createNode("Block", NULL, $7, 's'); } else { $3->next = createNode("Block", NULL, createNode("Block", NULL, NULL, 0), 's'); } } $$ = createNode("If", NULL, $3, 'c'); }
+    |   IF '(' Expr2 ')' Statement   %prec IFX          {  if($5 != NULL) { $3->next = $5; $5->next = createASTNode("Block", NULL, NULL, 0); } else { $3->next = createASTNode("Block", NULL, createASTNode("Block", NULL, NULL, 0), 's'); } $$ = createASTNode("If", NULL, $3, 'c'); }
+    |   IF '(' Expr2 ')' Statement ELSE Statement       {  if($5 != NULL) { if($7 != NULL) { $3->next = $5; $5->next = $7; } else { $3->next = $5; $5->next = createASTNode("Block", NULL, NULL, 0); } } else { if ($7 != NULL) { $3->next = createASTNode("Block", NULL, $7, 's'); } else { $3->next = createASTNode("Block", NULL, createASTNode("Block", NULL, NULL, 0), 's'); } } $$ = createASTNode("If", NULL, $3, 'c'); }
 
-    |   WHILE '(' Expr2 ')' Statement                   {  if($5 != NULL) { $3->next = $5; } else { $3->next = createNode("Block", NULL, NULL, 0); } $$ = createNode("While", NULL, $3, 'c'); }
-    |   DO Statement WHILE '(' Expr2 ')' ';'            {  if($2 != NULL) { $2->next = $5; $$ = createNode("DoWhile", NULL, $2, 'c'); } else { $$ = createNode("DoWhile", NULL, createNode("Block", NULL, $5, 's'), 'c'); } }
+    |   WHILE '(' Expr2 ')' Statement                   {  if($5 != NULL) { $3->next = $5; } else { $3->next = createASTNode("Block", NULL, NULL, 0); } $$ = createASTNode("While", NULL, $3, 'c'); }
+    |   DO Statement WHILE '(' Expr2 ')' ';'            {  if($2 != NULL) { $2->next = $5; $$ = createASTNode("DoWhile", NULL, $2, 'c'); } else { $$ = createASTNode("DoWhile", NULL, createASTNode("Block", NULL, $5, 's'), 'c'); } }
 
-    |   PRINT '(' Expr2 ')' ';'                         {  $$ = createNode("Print", NULL, $3, 'c'); }
-    |   PRINT '(' STRLIT ')' ';'                        {  $$ = createNode("Print", NULL, createNode("StrLit", $3, NULL, 0), 'c'); }
+    |   PRINT '(' Expr2 ')' ';'                         {  $$ = createASTNode("Print", NULL, $3, 'c'); }
+    |   PRINT '(' STRLIT ')' ';'                        {  $$ = createASTNode("Print", NULL, createASTNode("StrLit", $3, NULL, 0), 'c'); }
 
     |   ';'                                             {  $$ = NULL; }
     |   Assignment ';'                                  {  $$ = $1; }
     |   MethodInvocation ';'                            {  $$ = $1; }
     |   ParseArgs ';'                                   {  $$ = $1; }
 
-    |   RETURN ';'                                      {  $$ = createNode("Return", NULL, NULL, 0); }
-    |   RETURN Expr2 ';'                                {  $$ = createNode("Return", NULL, $2, 'c'); }
+    |   RETURN ';'                                      {  $$ = createASTNode("Return", NULL, NULL, 0); }
+    |   RETURN Expr2 ';'                                {  $$ = createASTNode("Return", NULL, $2, 'c'); }
     ;
 
 Statement2:
@@ -141,13 +141,13 @@ Statement2:
     ;
 
 Assignment:
-        ID '=' Expr2                                    {  $$ = createNode("Assign", NULL, createNode("Id", $1, $3, 's'), 'c'); }
+        ID '=' Expr2                                    {  $$ = createASTNode("Assign", NULL, createASTNode("Id", $1, $3, 's'), 'c'); }
     ;
 
 MethodInvocation:
-        ID '(' ')'                                      {  $$ = createNode("Call", NULL, createNode("Id", $1, NULL, 0), 'c'); }
-    |   ID '(' Expr2 MethodInvocationContent ')'        {  $3->next = $4; $$ = createNode("Call", NULL, createNode("Id", $1, $3, 's'), 'c'); }
-    |   ID '(' error ')'                                { flagError = 1; $$ = createNode("Dummy", NULL, NULL, 0); }
+        ID '(' ')'                                      {  $$ = createASTNode("Call", NULL, createASTNode("Id", $1, NULL, 0), 'c'); }
+    |   ID '(' Expr2 MethodInvocationContent ')'        {  $3->next = $4; $$ = createASTNode("Call", NULL, createASTNode("Id", $1, $3, 's'), 'c'); }
+    |   ID '(' error ')'                                { flagError = 1; $$ = createASTNode("Dummy", NULL, NULL, 0); }
     ;
 
 MethodInvocationContent:
@@ -156,8 +156,8 @@ MethodInvocationContent:
     ;
 
 ParseArgs:
-        PARSEINT '(' ID '[' Expr2 ']' ')'               {  $$ = createNode("ParseArgs", NULL, createNode("Id", $3, $5, 's'), 'c'); }
-    |   PARSEINT '(' error ')'                          { flagError = 1; $$ = createNode("Dummy", NULL, NULL, 0); }
+        PARSEINT '(' ID '[' Expr2 ']' ')'               {  $$ = createASTNode("ParseArgs", NULL, createASTNode("Id", $3, $5, 's'), 'c'); }
+    |   PARSEINT '(' error ')'                          { flagError = 1; $$ = createASTNode("Dummy", NULL, NULL, 0); }
     ;
 
 Expr2:
@@ -166,39 +166,39 @@ Expr2:
     ;
 
 Expr:
-        '(' error ')'                                   { flagError = 1; $$ = createNode("Dummy", NULL, NULL, 0); }
+        '(' error ')'                                   { flagError = 1; $$ = createASTNode("Dummy", NULL, NULL, 0); }
 
     |   MethodInvocation                                {  $$ = $1; }
     |   ParseArgs                                       {  $$ = $1; }
 
-    |   Expr AND Expr                                   {  $1->next = $3; $$ = createNode("And", NULL, $1, 'c'); }
-    |   Expr OR Expr                                    {  $1->next = $3; $$ = createNode("Or", NULL, $1, 'c'); }
+    |   Expr AND Expr                                   {  $1->next = $3; $$ = createASTNode("And", NULL, $1, 'c'); }
+    |   Expr OR Expr                                    {  $1->next = $3; $$ = createASTNode("Or", NULL, $1, 'c'); }
 
-    |   Expr EQ Expr                                    {  $1->next = $3; $$ = createNode("Eq", NULL, $1, 'c'); }
-    |   Expr GEQ Expr                                   {  $1->next = $3; $$ = createNode("Geq", NULL, $1, 'c'); }
-    |   Expr '>' Expr                                   {  $1->next = $3; $$ = createNode("Gt", NULL, $1, 'c'); }
-    |   Expr LEQ Expr                                   {  $1->next = $3; $$ = createNode("Leq", NULL, $1, 'c'); }
-    |   Expr '<' Expr                                   {  $1->next = $3; $$ = createNode("Lt", NULL, $1, 'c'); }
-    |   Expr NEQ Expr                                   {  $1->next = $3; $$ = createNode("Neq", NULL, $1, 'c'); }
+    |   Expr EQ Expr                                    {  $1->next = $3; $$ = createASTNode("Eq", NULL, $1, 'c'); }
+    |   Expr GEQ Expr                                   {  $1->next = $3; $$ = createASTNode("Geq", NULL, $1, 'c'); }
+    |   Expr '>' Expr                                   {  $1->next = $3; $$ = createASTNode("Gt", NULL, $1, 'c'); }
+    |   Expr LEQ Expr                                   {  $1->next = $3; $$ = createASTNode("Leq", NULL, $1, 'c'); }
+    |   Expr '<' Expr                                   {  $1->next = $3; $$ = createASTNode("Lt", NULL, $1, 'c'); }
+    |   Expr NEQ Expr                                   {  $1->next = $3; $$ = createASTNode("Neq", NULL, $1, 'c'); }
 
-    |   Expr '+' Expr                                   {  $1->next = $3; $$ = createNode("Add", NULL, $1, 'c'); }
-    |   Expr '-' Expr                                   {  $1->next = $3; $$ = createNode("Sub", NULL, $1, 'c'); }
-    |   Expr '*' Expr                                   {  $1->next = $3; $$ = createNode("Mul", NULL, $1, 'c'); }
-    |   Expr '/' Expr                                   {  $1->next = $3; $$ = createNode("Div", NULL, $1, 'c'); }
-    |   Expr '%' Expr                                   {  $1->next = $3; $$ = createNode("Mod", NULL, $1, 'c'); }
+    |   Expr '+' Expr                                   {  $1->next = $3; $$ = createASTNode("Add", NULL, $1, 'c'); }
+    |   Expr '-' Expr                                   {  $1->next = $3; $$ = createASTNode("Sub", NULL, $1, 'c'); }
+    |   Expr '*' Expr                                   {  $1->next = $3; $$ = createASTNode("Mul", NULL, $1, 'c'); }
+    |   Expr '/' Expr                                   {  $1->next = $3; $$ = createASTNode("Div", NULL, $1, 'c'); }
+    |   Expr '%' Expr                                   {  $1->next = $3; $$ = createASTNode("Mod", NULL, $1, 'c'); }
 
-    |   '+' Expr        %prec UPLUS                     {  $$ = createNode("Plus", NULL, $2, 'c'); }
-    |   '-' Expr        %prec UMINUS                    {  $$ = createNode("Minus", NULL, $2, 'c'); }
-    |   '!' Expr                                        {  $$ = createNode("Not", NULL, $2, 'c'); }
+    |   '+' Expr        %prec UPLUS                     {  $$ = createASTNode("Plus", NULL, $2, 'c'); }
+    |   '-' Expr        %prec UMINUS                    {  $$ = createASTNode("Minus", NULL, $2, 'c'); }
+    |   '!' Expr                                        {  $$ = createASTNode("Not", NULL, $2, 'c'); }
 
-    |   ID                                              {  $$ = createNode("Id", $1, NULL, 0); }
-    |   ID DOTLENGTH                                    {  $$ = createNode("Length", NULL, createNode("Id", $1, NULL, 0), 'c'); }
+    |   ID                                              {  $$ = createASTNode("Id", $1, NULL, 0); }
+    |   ID DOTLENGTH                                    {  $$ = createASTNode("Length", NULL, createASTNode("Id", $1, NULL, 0), 'c'); }
 
     |   '(' Expr2 ')'                                    {  $$ = $2; }
 
-    |   BOOLLIT                                         {  $$ = createNode("BoolLit", $1, NULL, 0); }
-    |   DECLIT                                          {  $$ = createNode("DecLit", $1, NULL, 0); }
-    |   REALLIT                                         {  $$ = createNode("RealLit", $1, NULL, 0); }
+    |   BOOLLIT                                         {  $$ = createASTNode("BoolLit", $1, NULL, 0); }
+    |   DECLIT                                          {  $$ = createASTNode("DecLit", $1, NULL, 0); }
+    |   REALLIT                                         {  $$ = createASTNode("RealLit", $1, NULL, 0); }
     ;
 
 %%

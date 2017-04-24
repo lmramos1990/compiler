@@ -8,7 +8,7 @@ typedef struct tree_node {
     struct tree_node * next;
     struct tree_node * child;
     char * annotation;
-} Node;
+} ASTNode;
 
 typedef struct symbol_table {
     char * type;
@@ -18,12 +18,14 @@ typedef struct symbol_table {
     int flagMethod;
     struct symbol_table * next;
     struct symbol_table * child;
-} Table;
+} SymbolTableNode;
 
-Node* createNode(char *typeNode, char *contentNode, Node *relatedNode, char relation);
-void printTree(Node *node, int depth);
-void destroyTree(Node *node);
+ASTNode* createASTNode(char *typeNode, char *contentNode, ASTNode *relatedNode, char relation);
+void printTrees(ASTNode *node, int depth, int flagSymbomTable);
+void destroyAST(ASTNode *node);
 
-Table * createTableNode(char * type, char * name, char * params, char * flag, int flagMethod);
-Table *semanticAnalysis(Node *tree);
-void printTable(Table *symbolTable);
+SymbolTableNode * createSymbolTableNode(char * type, char * name, char * params, char * flag, int flagMethod);
+SymbolTableNode *semanticAnalysis(ASTNode *tree);
+void printTable(SymbolTableNode *symbolTable);
+void destroySymbolTable(SymbolTableNode *symbolTable);
+void ASTSemanticAnnotations(ASTNode *tree, SymbolTableNode *symbolTable);

@@ -1,9 +1,9 @@
 #include "structs.h"
 
-Node* createNode(char *typeNode, char *contentNode, Node *relatedNode, char relation) {
-    Node *newNode;
+ASTNode* createASTNode(char *typeNode, char *contentNode, ASTNode *relatedNode, char relation) {
+    ASTNode *newNode;
 
-    newNode = (Node*) malloc(sizeof(Node));
+    newNode = (ASTNode*) malloc(sizeof(ASTNode));
 
     newNode->type = strdup(typeNode);
     if (contentNode != NULL)
@@ -29,7 +29,7 @@ Node* createNode(char *typeNode, char *contentNode, Node *relatedNode, char rela
     return newNode;
 }
 
-void printTree(Node *node, int depth) {
+void printTrees(ASTNode *node, int depth, int flagSymbomTable) {
     int i;
 
     if (node == NULL)
@@ -41,22 +41,27 @@ void printTree(Node *node, int depth) {
     printf("%s", node->type);
     if (node->content != NULL)
         printf("(%s)", node->content);
+
+    if (flagSymbomTable)
+        if (node->annotation != NULL)
+            printf(" - %s", node->annotation);
+
     printf("\n");
 
     if (node->child != NULL)
-        printTree(node->child, depth + 1);
+        printTrees(node->child, depth + 1, flagSymbomTable);
     if (node->next != NULL)
-        printTree(node->next, depth);
+        printTrees(node->next, depth, flagSymbomTable);
 }
 
-void destroyTree(Node *node) {
+void destroyAST(ASTNode *node) {
     if (node == NULL)
         return;
 
     if (node->next != NULL)
-        destroyTree(node->next);
+        destroyAST(node->next);
     if (node->child != NULL)
-        destroyTree(node->child);
+        destroyAST(node->child);
 
     free(node->type);
     if (node->content != NULL)
