@@ -295,5 +295,40 @@ void ASTSemanticAnnotations(ASTNode *node, SymbolTableNode *symbolTable) {
     } else {
         ASTSemanticAnnotations(node->child, symbolTable);
     }
+
     ASTSemanticAnnotations(node->next, symbolTable);
+}
+
+char * checkVariable(ASTNode * astnode, SymbolTableNode * stnode, SymbolTableNode * currentMethodNode) {
+    if(stnode == NULL || currentMethodNode == NULL) {
+        return NULL;
+    }
+
+    if(astnode->content != NULL) {
+        char * variableName = astnode->content;
+    }
+
+    // check local variables
+    SymbolTableNode * aux = currentMethodNode;
+
+    while(aux != NULL) {
+        if(strcmp(aux->name, variableName) == 0 {
+            return aux->type;
+        }
+
+        aux = aux->next;
+    }
+
+    // check global variables
+    SymbolTableNode * aux = stnode;
+
+    while(aux != NULL) {
+        if(!(aux->flagMethod) && strcmp(aux->name, variableName) == 0 {
+            return aux->type;
+        }
+
+        aux = aux->next;
+    }
+
+    return NULL;
 }
