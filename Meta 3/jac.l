@@ -110,8 +110,9 @@ int main(int argc, char** argv) {
 
 			table = semanticAnalysis(tree);
 			printTable(table);
+			printf("\n");
 
-			ASTSemanticAnnotations(tree, table);
+			//ASTSemanticAnnotations(tree, table);
 			if (strcmp(argv[1], "-s") == 0) {
 				printTrees(tree, 0, 1);
 			}
@@ -128,6 +129,7 @@ int main(int argc, char** argv) {
 
 		table = semanticAnalysis(tree);
 		printTable(table);
+		printf("\n");
 
 		//ASTSemanticAnnotations(tree, table);
 

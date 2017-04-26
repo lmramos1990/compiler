@@ -66,5 +66,7 @@ void destroyAST(ASTNode *node) {
     free(node->type);
     if (node->content != NULL)
         free(node->content);
+    if (node->annotation != NULL)
+        free(node->annotation);
     free(node);
 }

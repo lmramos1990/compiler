@@ -1,7 +1,6 @@
 class teste {
     ;
-    public static int a;
-    public static double teste() {
+    public static void banana() {
+
     }
-    ;
 }
