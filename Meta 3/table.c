@@ -220,9 +220,10 @@ void destroySymbolTable(SymbolTableNode *symbolTable) {
     destroySymbolTable(symbolTable->next);
 }
 
-void ASTSemanticAnnotations(ASTNode *node, SymbolTableNode *symbolTable) {
+void ASTSemanticAnnotations(ASTNode *node, SymbolTableNode *symbolTable, SymbolTableNode *currentMethodNode, int flagVariable) {
     ASTNode *child1, *child2;
-    char *aux = NULL;
+    SymbolTableNode *auxSymbolTable;
+    char *varType;
 
     if (node == NULL)
         return;
@@ -232,20 +233,45 @@ void ASTSemanticAnnotations(ASTNode *node, SymbolTableNode *symbolTable) {
         a fazer o ciclo while?
     */
 
+    if (flagVariable) {
+        if (strcmp(node->type, "Id") == 0) {
+            varType = checkVariableExistance(node, symbolTable, currentMethodNode);
+            if (varType != NULL) {
+                node->annotation = strdup(varType);
+            } else {
+                printf("---> ERRRORORORORO <---------------------------------------\n");
+            }
+            return;
+        } else if (strcmp(node->type, "DecLit") == 0) {
+            node->annotation = strdup("int");
+            return;
+        } else if (strcmp(node->type, "RealLit") == 0) {
+            node->annotation = strdup("double");
+            return;
+        } else if (strcmp(node->type, "BoolLit") == 0) {
+            node->annotation = strdup("boolean");
+            return;
+        } else if (strcmp(node->type, "StrLit") == 0) {
+            node->annotation = strdup("String[]");
+            return;
+        }
+    }
+
     if (strcmp(node->type, "Assign") == 0) {
         child1 = node->child;
         child2 = node->child->next;
 
-        // check if they are vars -> check if they are declared
-        if (strcmp(child1->type, child2->type) == 0) {
-            sprintf(aux, "%c%s", (child1->type)[0] - 'A' + 'a', (child1->type) + 1);
-            node->annotation = strdup(aux);
+        ASTSemanticAnnotations(child1, symbolTable, currentMethodNode, 1);
+        ASTSemanticAnnotations(child2, symbolTable, currentMethodNode, 1);
+
+        if (strcmp(child1->annotation, child2->annotation) == 0) {
+            node->annotation = strdup(child1->annotation);
         } else {
-            ; // error
+            printf("---> ERRRORORORORO <---------------------------------------\n"); // error + double = int + etc
         }
     } else if (strcmp(node->type, "Call") == 0) {
         printf("Entrou Call\n");
-        /* Verificar se função existe e verificar que paramaetros tem e comparar esses parametros com os childs */
+        /* Verificar se função existe */
     } else if (strcmp(node->type, "ParseArgs") == 0) {
         child1 = node->child;
         child2 = node->child->next;
@@ -271,14 +297,14 @@ void ASTSemanticAnnotations(ASTNode *node, SymbolTableNode *symbolTable) {
        child1 = node->child;
        child2 = node->child->next;
 
-       // check if they are vars-> check if they are declared
-       if (strcmp(child1->type, child2->type) == 0) {
-            sprintf(aux, "%c%s", (child1->type)[0] - 'A' + 'a', child1->type + 1);
-            node->annotation = strdup(aux);
-        } else {
-            ;   // error
-        }
+       ASTSemanticAnnotations(child1, symbolTable, currentMethodNode, 1);
+       ASTSemanticAnnotations(child2, symbolTable, currentMethodNode, 1);
 
+       if (strcmp(child1->annotation, child2->annotation) == 0) {
+           node->annotation = strdup(child1->annotation);
+       } else {
+           printf("---> ERRRORORORORO <---------------------------------------\n"); // error + double = int + etc
+       }
     } else if (strcmp(node->type, "Minus") == 0) {
         printf("Entrou Minus\n");
     } else if (strcmp(node->type, "Not") == 0) {
@@ -292,27 +318,40 @@ void ASTSemanticAnnotations(ASTNode *node, SymbolTableNode *symbolTable) {
         } else {
          ;   // error
         }
+    } else if (strcmp(node->type, "MethodHeader") == 0) {
+        auxSymbolTable = symbolTable->child;
+
+        while (auxSymbolTable != NULL) {
+            if (auxSymbolTable->flagMethod && strcmp(auxSymbolTable->name, node->child->next->content) == 0) {
+                currentMethodNode = auxSymbolTable;
+                break;
+            }
+            auxSymbolTable = auxSymbolTable->next;
+        }
     } else {
-        ASTSemanticAnnotations(node->child, symbolTable);
+        ASTSemanticAnnotations(node->child, symbolTable, currentMethodNode, 0);
     }
 
-    ASTSemanticAnnotations(node->next, symbolTable);
+    ASTSemanticAnnotations(node->next, symbolTable, currentMethodNode, 0);
 }
 
-char * checkVariable(ASTNode * astnode, SymbolTableNode * stnode, SymbolTableNode * currentMethodNode) {
+char * checkVariableExistance(ASTNode * astnode, SymbolTableNode * stnode, SymbolTableNode * currentMethodNode) {
+    char *variableName;
+    SymbolTableNode *aux;
+
     if(stnode == NULL || currentMethodNode == NULL) {
         return NULL;
     }
 
     if(astnode->content != NULL) {
-        char * variableName = astnode->content;
+        variableName = astnode->content;
     }
 
     // check local variables
-    SymbolTableNode * aux = currentMethodNode;
+    aux = currentMethodNode->child;
 
     while(aux != NULL) {
-        if(strcmp(aux->name, variableName) == 0 {
+        if(strcmp(aux->name, variableName) == 0) {
             return aux->type;
         }
 
@@ -320,10 +359,10 @@ char * checkVariable(ASTNode * astnode, SymbolTableNode * stnode, SymbolTableNod
     }
 
     // check global variables
-    SymbolTableNode * aux = stnode;
+    aux = stnode->child;
 
     while(aux != NULL) {
-        if(!(aux->flagMethod) && strcmp(aux->name, variableName) == 0 {
+        if(!(aux->flagMethod) && strcmp(aux->name, variableName) == 0) {
             return aux->type;
         }
 

@@ -28,4 +28,5 @@ SymbolTableNode * createSymbolTableNode(char * type, char * name, char * params,
 SymbolTableNode *semanticAnalysis(ASTNode *tree);
 void printTable(SymbolTableNode *symbolTable);
 void destroySymbolTable(SymbolTableNode *symbolTable);
-void ASTSemanticAnnotations(ASTNode *tree, SymbolTableNode *symbolTable);
+void ASTSemanticAnnotations(ASTNode *node, SymbolTableNode *symbolTable, SymbolTableNode *currentMethodNode, int flagVariable);
+char* checkVariableExistance(ASTNode *astnode, SymbolTableNode *stnode, SymbolTableNode *currentMethodNode);

@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
 			printTable(table);
 			printf("\n");
 
-			//ASTSemanticAnnotations(tree, table);
+			ASTSemanticAnnotations(tree, table, NULL, 0);
 			if (strcmp(argv[1], "-s") == 0) {
 				printTrees(tree, 0, 1);
 			}
@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
 		printTable(table);
 		printf("\n");
 
-		//ASTSemanticAnnotations(tree, table);
+		ASTSemanticAnnotations(tree, table, NULL, 0);
 
 		destroySymbolTable(table);
 		destroyAST(tree);

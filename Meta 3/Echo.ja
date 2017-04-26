@@ -1,6 +1,11 @@
 class teste {
     ;
     public static void banana() {
+        int a, b, c;
+        a = b + asd();
+    }
 
+    public static int asd() {
+        return 2;
     }
 }
