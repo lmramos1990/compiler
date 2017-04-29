@@ -39,6 +39,8 @@ SymbolTableNode *semanticAnalysis(ASTNode *tree) {
     int flagClassCreated;
     char typeParams[1024];
 
+    // printf("LINE: %d COLUMN: %d\n", tree -> line, tree -> column);
+
     while (aux != NULL) {
         if (strcmp(aux->type, "Program") == 0) {
             table = createSymbolTableNode("Class", aux->child->content, NULL, NULL, 0);
@@ -380,9 +382,7 @@ void ASTSemanticAnnotations(ASTNode *node, SymbolTableNode *symbolTable, SymbolT
 
     } else if (strcmp(node->type, "Length") == 0) {
         child1 = node->child;
-
-        printf("lenght\n");
-
+        
         ASTSemanticAnnotations(child1, symbolTable, currentMethodNode, 1);
 
         if(child1->annotation == NULL) {

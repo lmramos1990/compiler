@@ -12,6 +12,7 @@ number		{digit}({digit}|_)*{digit}|{digit}
 	int flagError = 1;
 	char *auxType;
 	SymbolTableNode *table;
+	Payload * payload;
 %}
 
 %X COMMENT_MULTI STR
@@ -19,7 +20,7 @@ number		{digit}({digit}|_)*{digit}|{digit}
 %%
 
 "boolean" 												{ col += yyleng; if (flagM1) { printf("BOOL\n");} 					if (flagM2) { return BOOL;} }
-"true"|"false"											{ col += yyleng; if (flagM1) { printf("BOOLLIT(%s)\n", yytext);} 	if (flagM2) { yylval.value = strdup(yytext); return BOOLLIT;} }
+"true"|"false"											{ col += yyleng; if (flagM1) { printf("BOOLLIT(%s)\n", yytext);} 	if (flagM2) { payload = (Payload *) malloc(sizeof(Payload)); payload -> value = strdup(yytext); payload -> column = col; payload -> line = line; yylval.value = payload; return BOOLLIT;} }
 "class"													{ col += yyleng; if (flagM1) { printf("CLASS\n");} 					if (flagM2) { return CLASS;} }
 "do"													{ col += yyleng; if (flagM1) { printf("DO\n");} 					if (flagM2) { return DO;} }
 ".length"												{ col += yyleng; if (flagM1) { printf("DOTLENGTH\n");} 				if (flagM2) { return DOTLENGTH;} }
@@ -41,21 +42,21 @@ number		{digit}({digit}|_)*{digit}|{digit}
 "}"														{ col += yyleng; if (flagM1) { printf("CBRACE\n");} 				if (flagM2) { return '}';} }
 "["														{ col += yyleng; if (flagM1) { printf("OSQUARE\n");}				if (flagM2) { return '[';} }
 "]"														{ col += yyleng; if (flagM1) { printf("CSQUARE\n");}				if (flagM2) { return ']';} }
-"&&"													{ col += yyleng; if (flagM1) { printf("AND\n");} 					if (flagM2) { return AND;} }
-"||"													{ col += yyleng; if (flagM1) { printf("OR\n");} 					if (flagM2) { return OR;} }
-"<"														{ col += yyleng; if (flagM1) { printf("LT\n");} 					if (flagM2) { return '<';} }
-">"														{ col += yyleng; if (flagM1) { printf("GT\n");} 					if (flagM2) { return '>';} }
-"=="													{ col += yyleng; if (flagM1) { printf("EQ\n");} 					if (flagM2) { return EQ;} }
-"!="													{ col += yyleng; if (flagM1) { printf("NEQ\n");} 					if (flagM2) { return NEQ;} }
-"<="													{ col += yyleng; if (flagM1) { printf("LEQ\n");} 					if (flagM2) { return LEQ;} }
-">="													{ col += yyleng; if (flagM1) { printf("GEQ\n");} 					if (flagM2) { return GEQ;} }
-"+"														{ col += yyleng; if (flagM1) { printf("PLUS\n");} 					if (flagM2) { return '+';} }
-"-"														{ col += yyleng; if (flagM1) { printf("MINUS\n");} 					if (flagM2) { return '-';} }
-"*"														{ col += yyleng; if (flagM1) { printf("STAR\n");} 					if (flagM2) { return '*';} }
-"/"														{ col += yyleng; if (flagM1) { printf("DIV\n");} 					if (flagM2) { return '/';} }
-"%"														{ col += yyleng; if (flagM1) { printf("MOD\n");} 					if (flagM2) { return '%';} }
-"!"														{ col += yyleng; if (flagM1) { printf("NOT\n");} 					if (flagM2) { return '!';} }
-"="														{ col += yyleng; if (flagM1) { printf("ASSIGN\n");} 				if (flagM2) { return '=';} }
+"&&"													{ col += yyleng; if (flagM1) { printf("AND\n");} 					if (flagM2) { payload = (Payload *) malloc(sizeof(Payload)); payload -> column = col; payload -> line = line; yylval.value = payload; return AND;} }
+"||"													{ col += yyleng; if (flagM1) { printf("OR\n");} 					if (flagM2) { payload = (Payload *) malloc(sizeof(Payload)); payload -> column = col; payload -> line = line; yylval.value = payload; return OR;} }
+"<"														{ col += yyleng; if (flagM1) { printf("LT\n");} 					if (flagM2) { payload = (Payload *) malloc(sizeof(Payload)); payload -> column = col; payload -> line = line; yylval.value = payload; return '<';} }
+">"														{ col += yyleng; if (flagM1) { printf("GT\n");} 					if (flagM2) { payload = (Payload *) malloc(sizeof(Payload)); payload -> column = col; payload -> line = line; yylval.value = payload; return '>';} }
+"=="													{ col += yyleng; if (flagM1) { printf("EQ\n");} 					if (flagM2) { payload = (Payload *) malloc(sizeof(Payload)); payload -> column = col; payload -> line = line; yylval.value = payload; return EQ;} }
+"!="													{ col += yyleng; if (flagM1) { printf("NEQ\n");} 					if (flagM2) { payload = (Payload *) malloc(sizeof(Payload)); payload -> column = col; payload -> line = line; yylval.value = payload; return NEQ;} }
+"<="													{ col += yyleng; if (flagM1) { printf("LEQ\n");} 					if (flagM2) { payload = (Payload *) malloc(sizeof(Payload)); payload -> column = col; payload -> line = line; yylval.value = payload; return LEQ;} }
+">="													{ col += yyleng; if (flagM1) { printf("GEQ\n");} 					if (flagM2) { payload = (Payload *) malloc(sizeof(Payload)); payload -> column = col; payload -> line = line; yylval.value = payload; return GEQ;} }
+"+"														{ col += yyleng; if (flagM1) { printf("PLUS\n");} 					if (flagM2) { payload = (Payload *) malloc(sizeof(Payload)); payload -> column = col; payload -> line = line; yylval.value = payload; return '+';} }
+"-"														{ col += yyleng; if (flagM1) { printf("MINUS\n");} 					if (flagM2) { payload = (Payload *) malloc(sizeof(Payload)); payload -> column = col; payload -> line = line; yylval.value = payload; return '-';} }
+"*"														{ col += yyleng; if (flagM1) { printf("STAR\n");} 					if (flagM2) { payload = (Payload *) malloc(sizeof(Payload)); payload -> column = col; payload -> line = line; yylval.value = payload; return '*';} }
+"/"														{ col += yyleng; if (flagM1) { printf("DIV\n");} 					if (flagM2) { payload = (Payload *) malloc(sizeof(Payload)); payload -> column = col; payload -> line = line; yylval.value = payload; return '/';} }
+"%"														{ col += yyleng; if (flagM1) { printf("MOD\n");} 					if (flagM2) { payload = (Payload *) malloc(sizeof(Payload)); payload -> column = col; payload -> line = line; yylval.value = payload; return '%';} }
+"!"														{ col += yyleng; if (flagM1) { printf("NOT\n");} 					if (flagM2) { payload = (Payload *) malloc(sizeof(Payload)); payload -> column = col; payload -> line = line; yylval.value = payload; return '!';} }
+"="														{ col += yyleng; if (flagM1) { printf("ASSIGN\n");} 				if (flagM2) { payload = (Payload *) malloc(sizeof(Payload)); payload -> column = col; payload -> line = line; yylval.value = payload; return '=';} }
 ";"														{ col += yyleng; if (flagM1) { printf("SEMI\n");} 					if (flagM2) { return ';';} }
 ","														{ col += yyleng; if (flagM1) { printf("COMMA\n");} 					if (flagM2) { return ',';} }
 
@@ -70,13 +71,13 @@ number		{digit}({digit}|_)*{digit}|{digit}
 <COMMENT_MULTI>[^*\r\n]*								{ col += yyleng; }
 <COMMENT_MULTI><<EOF>>									{ printf("Line %d, col %d: unterminated comment\n", lineAux, colAux); yyterminate(); }
 
-({letter}|[_$])({text}|[_$])*							{ col += yyleng;	if (flagM1) { printf("ID(%s)\n", yytext);}		if (flagM2) { yylval.value = strdup(yytext); return ID;} }
+({letter}|[_$])({text}|[_$])*							{ col += yyleng;	if (flagM1) { printf("ID(%s)\n", yytext);}		if (flagM2) { payload = (Payload *) malloc(sizeof(Payload)); payload -> value = strdup(yytext); payload -> column = col; payload -> line = line; yylval.value = payload; return ID;} }
 
-{digit}|[1-9]({digit}|_)*{digit}						{ col += yyleng;	if (flagM1) { printf("DECLIT(%s)\n", yytext);}	if (flagM2) { yylval.value = strdup(yytext); return DECLIT;} }
+{digit}|[1-9]({digit}|_)*{digit}						{ col += yyleng;	if (flagM1) { printf("DECLIT(%s)\n", yytext);}	if (flagM2) { payload = (Payload *) malloc(sizeof(Payload)); payload -> value = strdup(yytext); payload -> column = col; payload -> line = line; yylval.value = payload; return DECLIT;} }
 
-{number}(\.({number}?([eE][+-]?{number})?)?|([eE][+-]?{number}))|\.{number}([eE][+-]?{number})?		{ col += yyleng; if (flagM1) { printf("REALLIT(%s)\n", yytext);}	if (flagM2) { yylval.value = strdup(yytext); return REALLIT;} }
+{number}(\.({number}?([eE][+-]?{number})?)?|([eE][+-]?{number}))|\.{number}([eE][+-]?{number})?		{ col += yyleng; if (flagM1) { printf("REALLIT(%s)\n", yytext);}	if (flagM2) { payload = (Payload *) malloc(sizeof(Payload)); payload -> value = strdup(yytext); payload -> column = col; payload -> line = line; yylval.value = payload; return REALLIT;} }
 
-\"([^"\n\r\\]|(\\[fnrt"\\]))*\"							{ col += yyleng;	if (flagM1) { printf("STRLIT(%s)\n", yytext);}	if (flagM2) { yylval.value = strdup(yytext); return STRLIT;} }
+\"([^"\n\r\\]|(\\[fnrt"\\]))*\"							{ col += yyleng;	if (flagM1) { printf("STRLIT(%s)\n", yytext);}	if (flagM2) { payload = (Payload *) malloc(sizeof(Payload)); payload -> value = strdup(yytext); payload -> column = col; payload -> line = line; yylval.value = payload; return STRLIT;} }
 \"														{ colAux = col++; 	BEGIN STR; }
 <STR>\"													{ col++; 			BEGIN 0;}
 <STR>([^"\n\r\\]|\\[fnrt"\\])*							{ col += yyleng; }

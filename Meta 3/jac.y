@@ -13,18 +13,32 @@
 %}
 
 %union {
-	char *value;
-	ASTNode *node;
+	Payload * value;
+	ASTNode * node;
 }
 
 %token BOOL CLASS DO DOTLENGTH DOUBLE ELSE IF INT PARSEINT PRINT PUBLIC RETURN STATIC STRING VOID WHILE
 %token <value> BOOLLIT
-%token AND OR EQ NEQ LEQ GEQ
+%token <value> AND
+%token <value> OR
+%token <value> EQ
+%token <value> NEQ
+%token <value> LEQ
+%token <value> GEQ
 %token RESERVED
 %token <value> ID
 %token <value> DECLIT
 %token <value> REALLIT
 %token <value> STRLIT
+%token <value> '='
+%token <value> '<'
+%token <value> '>'
+%token <value> '*'
+%token <value> '/'
+%token <value> '+'
+%token <value> '-'
+%token <value> '%'
+%token <value> '!'
 
 %right '='
 %left OR
@@ -171,25 +185,25 @@ Expr:
     |   MethodInvocation                                {  $$ = $1; }
     |   ParseArgs                                       {  $$ = $1; }
 
-    |   Expr AND Expr                                   {  $1->next = $3; $$ = createASTNode("And", NULL, $1, 'c'); }
-    |   Expr OR Expr                                    {  $1->next = $3; $$ = createASTNode("Or", NULL, $1, 'c'); }
+    |   Expr AND Expr                                   {  $1->next = $3; $$ = createASTNode("And", $2, $1, 'c'); }
+    |   Expr OR Expr                                    {  $1->next = $3; $$ = createASTNode("Or", $2, $1, 'c'); }
 
-    |   Expr EQ Expr                                    {  $1->next = $3; $$ = createASTNode("Eq", NULL, $1, 'c'); }
-    |   Expr GEQ Expr                                   {  $1->next = $3; $$ = createASTNode("Geq", NULL, $1, 'c'); }
-    |   Expr '>' Expr                                   {  $1->next = $3; $$ = createASTNode("Gt", NULL, $1, 'c'); }
-    |   Expr LEQ Expr                                   {  $1->next = $3; $$ = createASTNode("Leq", NULL, $1, 'c'); }
-    |   Expr '<' Expr                                   {  $1->next = $3; $$ = createASTNode("Lt", NULL, $1, 'c'); }
-    |   Expr NEQ Expr                                   {  $1->next = $3; $$ = createASTNode("Neq", NULL, $1, 'c'); }
+    |   Expr EQ Expr                                    {  $1->next = $3; $$ = createASTNode("Eq", $2, $1, 'c'); }
+    |   Expr GEQ Expr                                   {  $1->next = $3; $$ = createASTNode("Geq", $2, $1, 'c'); }
+    |   Expr '>' Expr                                   {  $1->next = $3; $$ = createASTNode("Gt", $2, $1, 'c'); }
+    |   Expr LEQ Expr                                   {  $1->next = $3; $$ = createASTNode("Leq", $2, $1, 'c'); }
+    |   Expr '<' Expr                                   {  $1->next = $3; $$ = createASTNode("Lt", $2, $1, 'c'); }
+    |   Expr NEQ Expr                                   {  $1->next = $3; $$ = createASTNode("Neq", $2, $1, 'c'); }
 
-    |   Expr '+' Expr                                   {  $1->next = $3; $$ = createASTNode("Add", NULL, $1, 'c'); }
-    |   Expr '-' Expr                                   {  $1->next = $3; $$ = createASTNode("Sub", NULL, $1, 'c'); }
-    |   Expr '*' Expr                                   {  $1->next = $3; $$ = createASTNode("Mul", NULL, $1, 'c'); }
-    |   Expr '/' Expr                                   {  $1->next = $3; $$ = createASTNode("Div", NULL, $1, 'c'); }
-    |   Expr '%' Expr                                   {  $1->next = $3; $$ = createASTNode("Mod", NULL, $1, 'c'); }
+    |   Expr '+' Expr                                   {  $1->next = $3; $$ = createASTNode("Add", $2, $1, 'c'); }
+    |   Expr '-' Expr                                   {  $1->next = $3; $$ = createASTNode("Sub", $2, $1, 'c'); }
+    |   Expr '*' Expr                                   {  $1->next = $3; $$ = createASTNode("Mul", $2, $1, 'c'); }
+    |   Expr '/' Expr                                   {  $1->next = $3; $$ = createASTNode("Div", $2, $1, 'c'); }
+    |   Expr '%' Expr                                   {  $1->next = $3; $$ = createASTNode("Mod", $2, $1, 'c'); }
 
-    |   '+' Expr        %prec UPLUS                     {  $$ = createASTNode("Plus", NULL, $2, 'c'); }
-    |   '-' Expr        %prec UMINUS                    {  $$ = createASTNode("Minus", NULL, $2, 'c'); }
-    |   '!' Expr                                        {  $$ = createASTNode("Not", NULL, $2, 'c'); }
+    |   '+' Expr        %prec UPLUS                     {  $$ = createASTNode("Plus", $1, $2, 'c'); }
+    |   '-' Expr        %prec UMINUS                    {  $$ = createASTNode("Minus", $1, $2, 'c'); }
+    |   '!' Expr                                        {  $$ = createASTNode("Not", $1, $2, 'c'); }
 
     |   ID                                              {  $$ = createASTNode("Id", $1, NULL, 0); }
     |   ID DOTLENGTH                                    {  $$ = createASTNode("Length", NULL, createASTNode("Id", $1, NULL, 0), 'c'); }

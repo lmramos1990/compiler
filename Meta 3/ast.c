@@ -1,72 +1,87 @@
 #include "structs.h"
 
-ASTNode* createASTNode(char *typeNode, char *contentNode, ASTNode *relatedNode, char relation) {
-    ASTNode *newNode;
+ASTNode * createASTNode(char * typeNode, Payload * content, ASTNode * relatedNode, char relation) {
+    ASTNode * newNode;
 
-    newNode = (ASTNode*) malloc(sizeof(ASTNode));
+    newNode = (ASTNode *) malloc(sizeof(ASTNode));
 
-    newNode->type = strdup(typeNode);
-    if (contentNode != NULL)
-        newNode->content = contentNode;
-    else
-        newNode->content = NULL;
+    newNode -> type = strdup(typeNode);
+    if(content != NULL) {
+        newNode -> content = content -> value;
+        newNode -> line = content -> line;
+        newNode -> column = content -> column;
+    } else {
+        newNode -> content = NULL;
+    }
 
-    switch (relation) {
+    switch(relation) {
         case 'c':   /* child node */
-            newNode->next = NULL;
-            newNode->child = relatedNode;
+            newNode -> next = NULL;
+            newNode -> child = relatedNode;
             break;
         case 's':   /* sibling node */
-            newNode->next = relatedNode;
-            newNode->child = NULL;
+            newNode -> next = relatedNode;
+            newNode -> child = NULL;
             break;
         default:
-            newNode->next = NULL;
-            newNode->child = NULL;
+            newNode -> next = NULL;
+            newNode -> child = NULL;
             break;
     }
 
     return newNode;
 }
 
-void printTrees(ASTNode *node, int depth, int flagSymbomTable) {
+void printTrees(ASTNode * node, int depth, int flagSymbomTable) {
     int i;
 
-    if (node == NULL)
+    if(node == NULL)
         return;
 
-    for (i = 0; i < depth; i++) {
+    for(i = 0; i < depth; i++) {
         printf("..");
     }
-    printf("%s", node->type);
-    if (node->content != NULL)
-        printf("(%s)", node->content);
+    printf("%s", node -> type);
+    if(node -> content != NULL)
+        printf("(%s)", node -> content);
 
-    if (flagSymbomTable)
-        if (node->annotation != NULL)
-            printf(" - %s", node->annotation);
+    if(flagSymbomTable) {
+        if(node -> annotation != NULL) {
+            printf(" - %s", node -> annotation);
+        }
+    }
 
     printf("\n");
 
-    if (node->child != NULL)
-        printTrees(node->child, depth + 1, flagSymbomTable);
-    if (node->next != NULL)
-        printTrees(node->next, depth, flagSymbomTable);
+    if(node -> child != NULL) {
+        printTrees(node -> child, depth + 1, flagSymbomTable);
+    }
+
+    if(node -> next != NULL) {
+        printTrees(node -> next, depth, flagSymbomTable);
+    }
 }
 
-void destroyAST(ASTNode *node) {
-    if (node == NULL)
+void destroyAST(ASTNode * node) {
+    if(node == NULL) {
         return;
+    }
 
-    if (node->next != NULL)
-        destroyAST(node->next);
-    if (node->child != NULL)
-        destroyAST(node->child);
+    if(node->next != NULL) {
+        destroyAST(node -> next);
+    }
 
-    free(node->type);
-    if (node->content != NULL)
-        free(node->content);
-    if (node->annotation != NULL)
-        free(node->annotation);
+    if(node->child != NULL) {
+        destroyAST(node -> child);
+    }
+
+    free(node -> type);
+    if(node -> content != NULL) {
+        free(node -> content);
+    }
+    if(node -> annotation != NULL) {
+        free(node -> annotation);
+    }
+
     free(node);
 }
