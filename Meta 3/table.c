@@ -31,6 +31,9 @@ SymbolTableNode * createSymbolTableNode(char * type, char * name, char * params,
 
     newNode -> flagMethod = flagMethod;
 
+    newNode->child = NULL;
+    newNode->next = NULL;
+
     return newNode;
 }
 
@@ -112,9 +115,7 @@ SymbolTableNode * semanticAnalysis(ASTNode * tree) {
                 auxMethod = auxMethod->next;
 
                 while (auxMethod != NULL) {
-                    if(checkVariableExistance(auxMethod -> child -> next, auxTableMethodNode, auxTableMethodNode, 1) == NULL) {
-                        ;
-                    } else {
+                    if(checkVariableExistance(auxMethod -> child -> next, auxTableMethodNode, auxTableMethodNode, 1) != NULL) {
                         printf("Line %d, col %d: Symbol %s already defined\n", auxMethod -> child -> next -> line, auxMethod -> child -> next -> column, auxMethod -> child -> next -> content);
                     }
 
@@ -543,7 +544,6 @@ char * getMethodType(ASTNode * astnode, SymbolTableNode * stnode) {
                 ASTSemanticAnnotations(astnode, stnode, 1);
 
                 if(astnode->annotation == NULL) {
-                    printf("ERROR: ID NOT EXISTENT\n");
                     break;
                 }
 

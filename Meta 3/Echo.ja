@@ -4,6 +4,8 @@ class gcd2 {
     public static int main(String[] args) {
         int a;
         a = 1;
+        boolean b;
+        b = true;
         return a;
     }
 
