@@ -111,7 +111,7 @@ int main(int argc, char** argv) {
 					printTrees(tree, 0, 0);
 
 				table = semanticAnalysis(tree);
-				ASTSemanticAnnotations(tree, table, NULL, 0);
+				ASTSemanticAnnotations(tree, table, 0);
 				printf("\n");
 				printTable(table);
 				printf("\n");
@@ -127,6 +127,7 @@ int main(int argc, char** argv) {
 		}
 	} else {
 		flagM2 = 1;
+		flagError = 0;
 		auxType = strdup("placeholder");
 
 		yyparse();
@@ -134,7 +135,7 @@ int main(int argc, char** argv) {
 		if (!flagError) {
 			table = semanticAnalysis(tree);
 
-			ASTSemanticAnnotations(tree, table, NULL, 0);
+			ASTSemanticAnnotations(tree, table, 0);
 			printf("\n");
 			printTable(table);
 			printf("\n");

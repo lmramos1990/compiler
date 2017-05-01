@@ -1,5 +1,7 @@
 #include "structs.h"
 
+SymbolTableNode * AnnotationsCurrentMethodNode = NULL;
+
 SymbolTableNode * createSymbolTableNode(char * type, char * name, char * params, char * flag, int flagMethod) {
     SymbolTableNode * newNode;
 
@@ -111,7 +113,7 @@ SymbolTableNode * semanticAnalysis(ASTNode * tree) {
 
                 while (auxMethod != NULL) {
                     if(checkVariableExistance(auxMethod -> child -> next, auxTableMethodNode, auxTableMethodNode, 1) == NULL) {
-                        printf("ebriting is fine\n");
+                        ;
                     } else {
                         printf("Line %d, col %d: Symbol %s already defined\n", auxMethod -> child -> next -> line, auxMethod -> child -> next -> column, auxMethod -> child -> next -> content);
                     }
@@ -263,7 +265,7 @@ void destroySymbolTable(SymbolTableNode *symbolTable) {
     destroySymbolTable(symbolTable->next);
 }
 
-void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, SymbolTableNode * currentMethodNode, int flagVariable) {
+void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int flagVariable) {
     ASTNode * child1, * child2;
     SymbolTableNode * auxSymbolTable;
     char * varType;
@@ -274,7 +276,7 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, Symbo
 
     if(flagVariable) {
         if(strcmp(node -> type, "Id") == 0) {
-            varType = checkVariableExistance(node, symbolTable, currentMethodNode, 0);
+            varType = checkVariableExistance(node, symbolTable, AnnotationsCurrentMethodNode, 0);
 
             if(varType != NULL) {
                 node -> annotation = strdup(varType);
@@ -306,8 +308,8 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, Symbo
         child1 = node -> child;
         child2 = node -> child -> next;
 
-        ASTSemanticAnnotations(child1, symbolTable, currentMethodNode, 1);
-        ASTSemanticAnnotations(child2, symbolTable, currentMethodNode, 1);
+        ASTSemanticAnnotations(child1, symbolTable, 1);
+        ASTSemanticAnnotations(child2, symbolTable, 1);
 
         if(strcmp(child1 -> annotation, "undef") != 0 && strcmp(child2 -> annotation, "undef") != 0) {
             if(strcmp(child1 -> annotation, child2 -> annotation) == 0) {
@@ -324,15 +326,15 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, Symbo
         }
     } else if(strcmp(node -> type, "Call") == 0) {
         child1 = node -> child;
-        char * methodType = getMethodType(child1, symbolTable, currentMethodNode);
+        char * methodType = getMethodType(child1, symbolTable);
         node -> annotation = strdup(methodType);
 
     } else if(strcmp(node -> type, "ParseArgs") == 0) {
         child1 = node->child;
         child2 = node->child->next;
 
-        ASTSemanticAnnotations(child1, symbolTable, currentMethodNode, 1);
-        ASTSemanticAnnotations(child2, symbolTable, currentMethodNode, 1);
+        ASTSemanticAnnotations(child1, symbolTable, 1);
+        ASTSemanticAnnotations(child2, symbolTable, 1);
 
         if(strcmp(child1 -> annotation, "undef") != 0 && strcmp(child2 -> annotation, "undef") != 0) {
             if(strcmp(child1 -> annotation, "String[]") == 0) {
@@ -353,8 +355,8 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, Symbo
         child1 = node -> child;
         child2 = node -> child -> next;
 
-        ASTSemanticAnnotations(child1, symbolTable, currentMethodNode, 1);
-        ASTSemanticAnnotations(child2, symbolTable, currentMethodNode, 1);
+        ASTSemanticAnnotations(child1, symbolTable, 1);
+        ASTSemanticAnnotations(child2, symbolTable, 1);
 
         if(strcmp(child1 -> annotation, "undef") != 0 && strcmp(child2 -> annotation, "undef") != 0) {
             if(strcmp(child1 -> annotation, child2 -> annotation) == 0) {
@@ -372,8 +374,8 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, Symbo
         child1 = node -> child;
         child2 = node -> child -> next;
 
-        ASTSemanticAnnotations(child1, symbolTable, currentMethodNode, 1);
-        ASTSemanticAnnotations(child2, symbolTable, currentMethodNode, 1);
+        ASTSemanticAnnotations(child1, symbolTable, 1);
+        ASTSemanticAnnotations(child2, symbolTable, 1);
 
         if(strcmp(child1 -> annotation, "undef") != 0 && strcmp(child2 -> annotation, "undef") != 0) {
             if(strcmp(child1 -> annotation, child2 -> annotation) == 0) {
@@ -388,7 +390,7 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, Symbo
     } else if(strcmp(node -> type, "Minus") == 0 || strcmp(node -> type, "Plus") == 0) {
         child1 = node -> child;
 
-        ASTSemanticAnnotations(child1, symbolTable, currentMethodNode, 1);
+        ASTSemanticAnnotations(child1, symbolTable, 1);
 
         if(strcmp(child1 -> annotation, "undef") != 0) {
             if(strcmp(child1 -> annotation, "int") == 0 || strcmp(child1 -> annotation, "double") == 0) {
@@ -404,7 +406,7 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, Symbo
     } else if(strcmp(node -> type, "Not") == 0) {
         child1 = node -> child;
 
-        ASTSemanticAnnotations(child1, symbolTable, currentMethodNode, 1);
+        ASTSemanticAnnotations(child1, symbolTable, 1);
 
         if(strcmp(child1 -> annotation, "undef") != 0) {
             if(strcmp(child1 -> annotation, "boolean") == 0) {
@@ -419,7 +421,7 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, Symbo
         }
     } else if(strcmp(node -> type, "Print") == 0) {
         child1 = node -> child;
-        ASTSemanticAnnotations(child1, symbolTable, currentMethodNode, 1);
+        ASTSemanticAnnotations(child1, symbolTable, 1);
 
         if(strcmp(child1 -> annotation, "undef") == 0) {
             printf("Line %d, col %d: Operator %s cannot be applied to type %s\n", node -> line, node -> column, node -> type, child1 -> annotation);
@@ -427,7 +429,7 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, Symbo
     } else if(strcmp(node -> type, "Length") == 0) {
         child1 = node -> child;
 
-        ASTSemanticAnnotations(child1, symbolTable, currentMethodNode, 1);
+        ASTSemanticAnnotations(child1, symbolTable, 1);
 
         if(strcmp(child1 -> annotation, "undef") != 0) {
             if(strcmp(child1 -> annotation, "String[]") == 0) {
@@ -445,14 +447,14 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, Symbo
         child1 = node -> child;
 
         if(child1 == NULL) {
-            if(strcmp(currentMethodNode -> type, "void") != 0) {
+            if(strcmp(AnnotationsCurrentMethodNode -> type, "void") != 0) {
                 printf("Line %d, col %d: Incompatible type void in %s statement\n", node -> line, node -> column, node -> type);
             }
         } else {
-            ASTSemanticAnnotations(child1, symbolTable, currentMethodNode, 1);
+            ASTSemanticAnnotations(child1, symbolTable, 1);
 
             if(strcmp(child1 -> annotation, "undef") != 0) {
-                if(strcmp(currentMethodNode -> type, child1 -> annotation) != 0) {
+                if(strcmp(AnnotationsCurrentMethodNode -> type, child1 -> annotation) != 0) {
                     printf("Line %d, col %d: Incompatible type %s in %s statement\n", node -> line, node -> column, child1 -> annotation, node -> type);
                 }
             } else {
@@ -461,20 +463,24 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, Symbo
         }
 
     } else if(strcmp(node -> type, "MethodHeader") == 0) {
-        auxSymbolTable = symbolTable->child;
+        if (AnnotationsCurrentMethodNode == NULL)
+            auxSymbolTable = symbolTable->child;
+        else {
+            auxSymbolTable = AnnotationsCurrentMethodNode->next;
+        }
 
         while(auxSymbolTable != NULL) {
-            if(auxSymbolTable -> flagMethod && strcmp(auxSymbolTable -> name, node -> child -> next -> content) == 0) {
-                currentMethodNode = auxSymbolTable;
+            if(auxSymbolTable -> flagMethod) {
+                AnnotationsCurrentMethodNode = auxSymbolTable;
                 break;
             }
             auxSymbolTable = auxSymbolTable -> next;
         }
     } else {
-        ASTSemanticAnnotations(node->child, symbolTable, currentMethodNode, 0);
+        ASTSemanticAnnotations(node->child, symbolTable, 0);
     }
 
-    ASTSemanticAnnotations(node->next, symbolTable, currentMethodNode, 0);
+    ASTSemanticAnnotations(node->next, symbolTable, 0);
 }
 
 char * checkVariableExistance(ASTNode * astnode, SymbolTableNode * stnode, SymbolTableNode * currentMethodNode, int flagLocal) {
@@ -492,7 +498,7 @@ char * checkVariableExistance(ASTNode * astnode, SymbolTableNode * stnode, Symbo
     }
 
     // check local variables
-    aux = currentMethodNode->child;
+    aux = currentMethodNode->child->next;
 
     while(aux != NULL) {
         if(strcmp(aux->name, variableName) == 0) {
@@ -505,7 +511,6 @@ char * checkVariableExistance(ASTNode * astnode, SymbolTableNode * stnode, Symbo
     // check global variables
     if(!flagLocal) {
         aux = stnode->child;
-
         while(aux != NULL) {
             if(!(aux->flagMethod) && strcmp(aux->name, variableName) == 0) {
                 return aux->type;
@@ -518,7 +523,7 @@ char * checkVariableExistance(ASTNode * astnode, SymbolTableNode * stnode, Symbo
     return NULL;
 }
 
-char * getMethodType(ASTNode * astnode, SymbolTableNode * stnode, SymbolTableNode * currentMethodNode) {
+char * getMethodType(ASTNode * astnode, SymbolTableNode * stnode) {
     SymbolTableNode * aux, * aux2;
 
     if(stnode == NULL) {
@@ -535,7 +540,7 @@ char * getMethodType(ASTNode * astnode, SymbolTableNode * stnode, SymbolTableNod
             astnode = astnode->next;
 
             while(astnode != NULL && aux2 != NULL) {
-                ASTSemanticAnnotations(astnode, stnode, currentMethodNode, 1);
+                ASTSemanticAnnotations(astnode, stnode, 1);
 
                 if(astnode->annotation == NULL) {
                     printf("ERROR: ID NOT EXISTENT\n");

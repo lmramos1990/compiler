@@ -6,20 +6,10 @@ class gcd2 {
         a = 1;
         return a;
     }
-    // should any of these three methods return any kind of error
-    public static int hello(int a, double a) {
-        a = a + 1;
-    }
 
-    public static int hello(int a, double a) {
-        return 2.0;
-    }
+    public static boolean asd;
 
-    public static int hello(int a) {
-        return a;
-    }
-
-    public static int hello(int a) {
-        return 1;
+    public static double main(double cenas) {
+        return cenas;
     }
 }
