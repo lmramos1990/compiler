@@ -3,7 +3,7 @@ class gcd2 {
 
     public static int main(String[] args) {
         int a;
-        a = 1;
+        a = 1_000_000_000;
         boolean b;
         b = true;
         return a;

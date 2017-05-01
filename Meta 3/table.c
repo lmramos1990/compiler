@@ -287,10 +287,13 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
             }
             return;
         } else if(strcmp(node -> type, "DecLit") == 0) {
-            if(strlen(node->content) > 10 || atol(node -> content) >= 2147483648) {
+
+            char * number = parseNumbers(node -> content);
+
+            if(strlen(number) > 10 || atol(number) >= 2147483648) {
                 printf("Line %d, col %d: Number %s out of bounds\n", node -> line, node -> column, node -> content);
             }
-
+            free(number);
             node -> annotation = strdup("int");
             return;
         } else if(strcmp(node -> type, "RealLit") == 0) {
@@ -584,4 +587,21 @@ int isSameMethod(SymbolTableNode * current, SymbolTableNode * method) {
     } else {
         return 0;
     }
+}
+
+char * parseNumbers(char * number) {
+    int i = 0;
+    int j = 0;
+    char newNumber[1000];
+
+    for(i = 0; i < strlen(number); i++) {
+        if(number[i] != '_') {
+            newNumber[j] = number[i];
+            j++;
+        }
+    }
+
+    newNumber[j] = '\0';
+
+    return strdup(newNumber);
 }

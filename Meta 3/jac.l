@@ -107,12 +107,13 @@ int main(int argc, char** argv) {
 			yyparse();
 
 			if (!flagError) {
-				if (strcmp(argv[1], "-t") == 0)
+				if (strcmp(argv[1], "-t") == 0) {
 					printTrees(tree, 0, 0);
+					printf("\n");
+				}
 
 				table = semanticAnalysis(tree);
 				ASTSemanticAnnotations(tree, table, 0);
-				printf("\n");
 				printTable(table);
 				printf("\n");
 
@@ -136,7 +137,6 @@ int main(int argc, char** argv) {
 			table = semanticAnalysis(tree);
 
 			ASTSemanticAnnotations(tree, table, 0);
-			printf("\n");
 			printTable(table);
 			printf("\n");
 		}

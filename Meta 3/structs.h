@@ -40,3 +40,4 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
 char * checkVariableExistance(ASTNode * astnode, SymbolTableNode * stnode, SymbolTableNode * currentMethodNode, int flagLocal);
 char * getMethodType(ASTNode * astnode, SymbolTableNode * stnode);
 int isSameMethod(SymbolTableNode * current, SymbolTableNode * method);
+char * parseNumbers(char * number);
