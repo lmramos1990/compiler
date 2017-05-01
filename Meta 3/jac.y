@@ -17,7 +17,10 @@
 	ASTNode * node;
 }
 
-%token BOOL CLASS DO DOTLENGTH DOUBLE ELSE IF INT PARSEINT PRINT PUBLIC RETURN STATIC STRING VOID WHILE
+%token BOOL CLASS DO DOUBLE ELSE IF INT PRINT PUBLIC STATIC STRING VOID WHILE
+%token <value> RETURN
+%token <value> PARSEINT
+%token <value> DOTLENGTH
 %token <value> BOOLLIT
 %token <value> AND
 %token <value> OR
@@ -145,8 +148,8 @@ Statement:
     |   MethodInvocation ';'                            {  $$ = $1; }
     |   ParseArgs ';'                                   {  $$ = $1; }
 
-    |   RETURN ';'                                      {  $$ = createASTNode("Return", NULL, NULL, 0); }
-    |   RETURN Expr2 ';'                                {  $$ = createASTNode("Return", NULL, $2, 'c'); }
+    |   RETURN ';'                                      {  $$ = createASTNode("Return", $1, NULL, 0); }
+    |   RETURN Expr2 ';'                                {  $$ = createASTNode("Return", $1, $2, 'c'); }
     ;
 
 Statement2:
@@ -170,7 +173,7 @@ MethodInvocationContent:
     ;
 
 ParseArgs:
-        PARSEINT '(' ID '[' Expr2 ']' ')'               {  $$ = createASTNode("ParseArgs", NULL, createASTNode("Id", $3, $5, 's'), 'c'); }
+        PARSEINT '(' ID '[' Expr2 ']' ')'               {  $$ = createASTNode("ParseArgs", $1, createASTNode("Id", $3, $5, 's'), 'c'); }
     |   PARSEINT '(' error ')'                          { flagError = 1; $$ = createASTNode("Dummy", NULL, NULL, 0); }
     ;
 
@@ -206,7 +209,7 @@ Expr:
     |   '!' Expr                                        {  $$ = createASTNode("Not", $1, $2, 'c'); }
 
     |   ID                                              {  $$ = createASTNode("Id", $1, NULL, 0); }
-    |   ID DOTLENGTH                                    {  $$ = createASTNode("Length", NULL, createASTNode("Id", $1, NULL, 0), 'c'); }
+    |   ID DOTLENGTH                                    {  $$ = createASTNode("Length", $2, createASTNode("Id", $1, NULL, 0), 'c'); }
 
     |   '(' Expr2 ')'                                    {  $$ = $2; }
 

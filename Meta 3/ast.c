@@ -10,6 +10,8 @@ ASTNode * createASTNode(char * typeNode, Payload * content, ASTNode * relatedNod
         newNode -> content = content -> value;
         newNode -> line = content -> line;
         newNode -> column = content -> column;
+
+        free(content);
     } else {
         newNode -> content = NULL;
     }

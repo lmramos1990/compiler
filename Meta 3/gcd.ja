@@ -1,0 +1,10 @@
+class asd {
+    public static int a;
+
+    public static int main() {
+        if (1 > 2) {
+            int a;
+            a = 1;
+        }
+    }
+}
