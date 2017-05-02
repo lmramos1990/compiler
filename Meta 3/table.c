@@ -340,10 +340,16 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
         char * methodType = getMethodType(child1, symbolTable);
 
         if(methodType == NULL) {
-            printf("METHOD TYPE: NULL\n");
+            printf("Line %d, col %d: Cannot find symbol %s(", node -> child -> line, node -> child -> column, node -> child -> content);
+            params = child1 -> next;
+            while(params != NULL) {
+                printf("%s", params -> annotation);
+                if(params -> next != NULL) printf(",");
+                params = params -> next;
+            }
+            printf(")\n");
             node -> annotation = strdup("undef");
         } else {
-            printf("METHOD TYPE: %s\n", methodType);
             node -> annotation = strdup(methodType);
         }
 

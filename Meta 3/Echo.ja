@@ -4,17 +4,9 @@ class gcd2 {
     public static int main(String[] args) {
 
         //hello(1, hello(1, 1.0));
-        hello(1, 1.0);
+        hello(1, 1, true, 1, 1.0, 2.0);
 
 
         return 0;
-    }
-
-    public static int hello(int a, double b) {
-        return a;
-    }
-
-    public static double hello(double a, double b) {
-        return a;
     }
 }
