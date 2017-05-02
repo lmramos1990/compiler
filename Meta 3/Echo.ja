@@ -2,16 +2,17 @@ class gcd2 {
     public static int gcd;
 
     public static int main(String[] args) {
-        int a;
-        a = 1_000_000_000;
-        boolean b;
-        b = true;
+
+        hello(1, hello(1.0, 1.0));
+
+        return 0;
+    }
+
+    public static int hello(int a, double b) {
         return a;
     }
 
-    public static boolean asd;
-
-    public static double main(double cenas) {
-        return cenas;
+    public static double hello(double a, double b) {
+        return a;
     }
 }

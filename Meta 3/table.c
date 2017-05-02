@@ -330,8 +330,22 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
         }
     } else if(strcmp(node -> type, "Call") == 0) {
         child1 = node -> child;
+        ASTNode * params = child1 -> next;
+
+        while(params != NULL) {
+            ASTSemanticAnnotations(params, symbolTable, 1);
+            params = params -> next;
+        }
+
         char * methodType = getMethodType(child1, symbolTable);
-        node -> annotation = strdup(methodType);
+
+        if(methodType == NULL) {
+            printf("METHOD TYPE: NULL\n");
+            node -> annotation = strdup("undef");
+        } else {
+            printf("METHOD TYPE: %s\n", methodType);
+            node -> annotation = strdup(methodType);
+        }
 
     } else if(strcmp(node -> type, "ParseArgs") == 0) {
         child1 = node->child;
@@ -534,41 +548,92 @@ char * getMethodType(ASTNode * astnode, SymbolTableNode * stnode) {
         return NULL;
     }
 
-    aux = stnode->child;
+    aux = stnode -> child;
+
+    // same  name and same parameters!
+    // same name different parameter continues
+    // different names continues
+    // int flagAmbiguity = 0;
+
 
     while(aux != NULL) {
-        if(aux->flagMethod && strcmp(astnode->content, aux->name) == 0) {
-            astnode->annotation = strdup(aux->params);
+        if(aux -> flagMethod && strcmp(astnode -> content, aux -> name) == 0) {
+            // printf("ESTA E A FUNCAO QUE ESTOU A TESTAR: %s %s : FUNCAO DA TABELA\n", astnode -> content, aux -> name);
+            ASTNode * params = astnode -> next;
+            aux2 = aux -> child -> next;
 
-            aux2 = aux->child->next;
-            astnode = astnode->next;
+            SymbolTableNode * lastFit = NULL;
 
-            while(astnode != NULL && aux2 != NULL) {
-                ASTSemanticAnnotations(astnode, stnode, 1);
-
-                if(astnode->annotation == NULL) {
+            int flagTaTudoBem = 1;
+            int flagPerfectFit = 1;
+            while(params != NULL && aux2 != NULL) {
+                // printf("TEST: %s %s : TABLE\n", params -> annotation, aux2 -> type);
+                if(strcmp(params -> annotation, aux2 -> type) == 0) {
+                    // printf("PARAMS HAVE THE SAME TYPE -> CONTINUE WITHOUT PROBLEMS\n");
+                } else if(strcmp(params -> annotation, "int") == 0 && strcmp(aux2 -> type, "double") == 0) {
+                    flagPerfectFit = 0;
+                    // printf("PARAMS DONT HAVE THE SAME TYPE -> ACCEPTABLE\n");
+                } else {
+                    // printf("PARAMS DONT HAVE THE SAME TYPE -> UNACCEPTABLE\n");
+                    flagTaTudoBem = 0;
                     break;
                 }
 
-                if(strcmp(aux2->type, astnode->annotation) != 0) {
-                    printf("Line %d, col %d: %s\n", astnode -> line, astnode -> column, astnode -> type);
-                    break;
+                params = params -> next;
+                aux2 = aux2 -> next;
+            }
+
+            if(!flagTaTudoBem) {
+                aux = aux -> next;
+                continue;
+            }
+
+            if(params == NULL && aux2 == NULL) {
+                if(lastFit == NULL) {
+                    lastFit = aux;
                 }
 
-                aux2 = aux2->next;
-                astnode = astnode->next;
-            }
 
-            if ((astnode == NULL && aux2 != NULL) || (astnode != NULL && aux2 == NULL)) {
-                printf("Line %d, col %d: %s\n", astnode -> line, astnode -> column, astnode -> type);
-            }
+                if(flagPerfectFit) {
+                    astnode -> annotation = strdup(aux -> params);
+                    return aux -> type;
+                } else {
+                    astnode -> annotation = strdup(aux -> params);
+                    return aux -> type;
+                }
 
-            return aux->type;
+                // // printf("last fit\n");
+                // //
+                // // if(lastFit == NULL) {
+                // //     lastFit = aux2;
+                // //     printf("last fit 2\n");
+                // // } else {
+                // //     flagAmbiguity = 1;
+                // //
+                // //     printf("hello\n");
+                // //     // se este for uma fit perfeita, isto é, os tipos do parametros sao todos exatamente iguais aos passados
+                // //     // entao devolver este no
+                // //     // senao "dizer" que é ambiguo? - visto haver mais do que um possivel mas nao best fit
+                // //     //     desde que para a frente nao haja um best fit
+                // //     //      basicamente por uma flag a 1 e no final verificar se nao houve best fit e flag a 1 dar ambiguidade
+                // // }
+                // if(lastFit == NULL) {
+                //     lastFit = aux2;
+                // }
+                //
+                // if(flagPerfectFit) {
+                //     printf("havia um fit que nao era perfeito mas acabei de encontrar um que e perfeito\n");
+                // } else if(!flagPerfectFit) {
+                //     printf("havia um fit que nao era perfeito e acabei de encontar outro que nao e perfeito\n");
+                // } else {
+                //     printf("vim parar ao else?\n");
+                // }
+            }
         }
-
-        aux = aux->next;
+        aux = aux -> next;
     }
 
+    astnode -> annotation = strdup("undef");
     return NULL;
 }
 
