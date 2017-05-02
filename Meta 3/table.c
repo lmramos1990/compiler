@@ -543,6 +543,7 @@ char * checkVariableExistance(ASTNode * astnode, SymbolTableNode * stnode, Symbo
 
 char * getMethodType(ASTNode * astnode, SymbolTableNode * stnode) {
     SymbolTableNode * aux, * aux2;
+    int flagTaTudoBem, flagPerfectFit;
 
     if(stnode == NULL) {
         return NULL;
@@ -555,6 +556,7 @@ char * getMethodType(ASTNode * astnode, SymbolTableNode * stnode) {
     // different names continues
     // int flagAmbiguity = 0;
 
+    SymbolTableNode * lastFit = NULL;
 
     while(aux != NULL) {
         if(aux -> flagMethod && strcmp(astnode -> content, aux -> name) == 0) {
@@ -562,10 +564,8 @@ char * getMethodType(ASTNode * astnode, SymbolTableNode * stnode) {
             ASTNode * params = astnode -> next;
             aux2 = aux -> child -> next;
 
-            SymbolTableNode * lastFit = NULL;
-
-            int flagTaTudoBem = 1;
-            int flagPerfectFit = 1;
+            flagTaTudoBem = 1;
+            flagPerfectFit = 1;
             while(params != NULL && aux2 != NULL) {
                 // printf("TEST: %s %s : TABLE\n", params -> annotation, aux2 -> type);
                 if(strcmp(params -> annotation, aux2 -> type) == 0) {
@@ -589,52 +589,56 @@ char * getMethodType(ASTNode * astnode, SymbolTableNode * stnode) {
             }
 
             if(params == NULL && aux2 == NULL) {
-                if(lastFit == NULL) {
-                    lastFit = aux;
-                }
-
-
                 if(flagPerfectFit) {
                     astnode -> annotation = strdup(aux -> params);
                     return aux -> type;
-                } else {
-                    astnode -> annotation = strdup(aux -> params);
-                    return aux -> type;
                 }
 
-                // // printf("last fit\n");
-                // //
-                // // if(lastFit == NULL) {
-                // //     lastFit = aux2;
-                // //     printf("last fit 2\n");
-                // // } else {
-                // //     flagAmbiguity = 1;
-                // //
-                // //     printf("hello\n");
-                // //     // se este for uma fit perfeita, isto é, os tipos do parametros sao todos exatamente iguais aos passados
-                // //     // entao devolver este no
-                // //     // senao "dizer" que é ambiguo? - visto haver mais do que um possivel mas nao best fit
-                // //     //     desde que para a frente nao haja um best fit
-                // //     //      basicamente por uma flag a 1 e no final verificar se nao houve best fit e flag a 1 dar ambiguidade
-                // // }
+                if(lastFit == NULL) {
+                    lastFit = aux;
+                } else {
+                    ; // ambiguo?
+                }
+/*
+                // printf("last fit\n");
+                //
                 // if(lastFit == NULL) {
                 //     lastFit = aux2;
-                // }
-                //
-                // if(flagPerfectFit) {
-                //     printf("havia um fit que nao era perfeito mas acabei de encontrar um que e perfeito\n");
-                // } else if(!flagPerfectFit) {
-                //     printf("havia um fit que nao era perfeito e acabei de encontar outro que nao e perfeito\n");
+                //     printf("last fit 2\n");
                 // } else {
-                //     printf("vim parar ao else?\n");
+                //     flagAmbiguity = 1;
+                //
+                //     printf("hello\n");
+                //     // se este for uma fit perfeita, isto é, os tipos do parametros sao todos exatamente iguais aos passados
+                //     // entao devolver este no
+                //     // senao "dizer" que é ambiguo? - visto haver mais do que um possivel mas nao best fit
+                //     //     desde que para a frente nao haja um best fit
+                //     //      basicamente por uma flag a 1 e no final verificar se nao houve best fit e flag a 1 dar ambiguidade
                 // }
+                if(lastFit == NULL) {
+                    lastFit = aux2;
+                }
+
+                if(flagPerfectFit) {
+                    printf("havia um fit que nao era perfeito mas acabei de encontrar um que e perfeito\n");
+                } else if(!flagPerfectFit) {
+                    printf("havia um fit que nao era perfeito e acabei de encontar outro que nao e perfeito\n");
+                } else {
+                    printf("vim parar ao else?\n");
+                }
+                */
             }
         }
         aux = aux -> next;
     }
 
-    astnode -> annotation = strdup("undef");
-    return NULL;
+    if (lastFit != NULL) {
+        astnode -> annotation = strdup(lastFit -> params);
+        return lastFit -> type;
+    } else {
+        astnode -> annotation = strdup("undef");
+        return NULL;
+    }
 }
 
 int isSameMethod(SymbolTableNode * current, SymbolTableNode * method) {

@@ -14,6 +14,8 @@ ASTNode * createASTNode(char * typeNode, Payload * content, ASTNode * relatedNod
         free(content);
     } else {
         newNode -> content = NULL;
+        newNode->line = -1;
+        newNode->column = -1;
     }
 
     switch(relation) {
@@ -30,6 +32,8 @@ ASTNode * createASTNode(char * typeNode, Payload * content, ASTNode * relatedNod
             newNode -> child = NULL;
             break;
     }
+
+    newNode->annotation = NULL;
 
     return newNode;
 }
@@ -65,24 +69,23 @@ void printTrees(ASTNode * node, int depth, int flagSymbomTable) {
 }
 
 void destroyAST(ASTNode * node) {
-    if(node == NULL) {
+    if (node == NULL) {
         return;
     }
 
-    if(node->next != NULL) {
+    if (node->next != NULL) {
         destroyAST(node -> next);
     }
-
-    if(node->child != NULL) {
+    if (node->child != NULL) {
         destroyAST(node -> child);
     }
 
-    free(node -> type);
-    if(node -> content != NULL) {
-        free(node -> content);
+    free(node->type);
+    if (node->content != NULL) {
+        free(node->content);
     }
-    if(node -> annotation != NULL) {
-        free(node -> annotation);
+    if (node->annotation != NULL) {
+        free(node->annotation);
     }
 
     free(node);
