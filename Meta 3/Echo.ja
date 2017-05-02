@@ -2,11 +2,14 @@ class gcd2 {
     public static int gcd;
 
     public static int main(String[] args) {
+        return 1.0;
+    }
 
-        //hello(1, hello(1, 1.0));
-        hello(1, 1, true, 1, 1.0, 2.0);
+    public static int hello(double a, int b) {
+        return 1;
+    }
 
-
-        return 0;
+    public static int hello(int a, double b) {
+        return 2;
     }
 }

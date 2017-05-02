@@ -349,6 +349,17 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
             }
             printf(")\n");
             node -> annotation = strdup("undef");
+        } else if(strcmp(methodType, "ambiguous") == 0) {
+            printf("Line %d, col %d: Reference to method %s(", node -> child -> line, node -> child -> column, node -> child -> content);
+            params = child1 -> next;
+            while(params != NULL) {
+                printf("%s", params -> annotation);
+                if(params -> next != NULL) printf(",");
+                params = params -> next;
+            }
+            printf(") is ambiguous\n");
+            child1 -> annotation = strdup("undef");
+            node -> annotation = strdup("undef");
         } else {
             node -> annotation = strdup(methodType);
         }
@@ -470,6 +481,8 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
 
         child1 = node -> child;
 
+        // double is not acceptable if the return type is int
+        // but the contrary is acceptable
         if(child1 == NULL) {
             if(strcmp(AnnotationsCurrentMethodNode -> type, "void") != 0) {
                 printf("Line %d, col %d: Incompatible type void in %s statement\n", node -> line, node -> column, node -> type);
@@ -479,13 +492,14 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
 
             if(strcmp(child1 -> annotation, "undef") != 0) {
                 if(strcmp(AnnotationsCurrentMethodNode -> type, child1 -> annotation) != 0) {
-                    printf("Line %d, col %d: Incompatible type %s in %s statement\n", node -> line, node -> column, child1 -> annotation, node -> type);
+                    if(strcmp(AnnotationsCurrentMethodNode -> type, "int") == 0 && strcmp(child1 -> annotation, "double") == 0) {
+                        printf("Line %d, col %d: Incompatible type %s in %s statement\n", node -> line, node -> column, child1 -> annotation, node -> type);
+                    }
                 }
             } else {
                 printf("Line %d, col %d: Incompatible type undef in %s statement\n", node -> line, node -> column, node -> type);
             }
         }
-
     } else if(strcmp(node -> type, "MethodHeader") == 0) {
         if (AnnotationsCurrentMethodNode == NULL)
             auxSymbolTable = symbolTable->child;
@@ -603,36 +617,8 @@ char * getMethodType(ASTNode * astnode, SymbolTableNode * stnode) {
                 if(lastFit == NULL) {
                     lastFit = aux;
                 } else {
-                    ; // ambiguo?
+                    return "ambiguous";
                 }
-/*
-                // printf("last fit\n");
-                //
-                // if(lastFit == NULL) {
-                //     lastFit = aux2;
-                //     printf("last fit 2\n");
-                // } else {
-                //     flagAmbiguity = 1;
-                //
-                //     printf("hello\n");
-                //     // se este for uma fit perfeita, isto é, os tipos do parametros sao todos exatamente iguais aos passados
-                //     // entao devolver este no
-                //     // senao "dizer" que é ambiguo? - visto haver mais do que um possivel mas nao best fit
-                //     //     desde que para a frente nao haja um best fit
-                //     //      basicamente por uma flag a 1 e no final verificar se nao houve best fit e flag a 1 dar ambiguidade
-                // }
-                if(lastFit == NULL) {
-                    lastFit = aux2;
-                }
-
-                if(flagPerfectFit) {
-                    printf("havia um fit que nao era perfeito mas acabei de encontrar um que e perfeito\n");
-                } else if(!flagPerfectFit) {
-                    printf("havia um fit que nao era perfeito e acabei de encontar outro que nao e perfeito\n");
-                } else {
-                    printf("vim parar ao else?\n");
-                }
-                */
             }
         }
         aux = aux -> next;
