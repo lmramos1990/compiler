@@ -2,7 +2,32 @@ class gcd2 {
     public static int gcd;
 
     public static int main(String[] args) {
-        return 1.0;
+        int a, b, c, d;
+        a = 1;
+        b = 2;
+        c = 3;
+        d = 4;
+
+        boolean ad;
+        ad = true;
+
+
+        hello(1.0, 1);
+
+
+        if(ad) {
+
+        }
+
+        if(true && true) {
+
+        }
+
+        if((a > b) && 1) {
+            System.out.println("false");
+        } else {
+            System.out.println("false");
+        }
     }
 
     public static int hello(double a, int b) {

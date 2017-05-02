@@ -160,30 +160,6 @@ SymbolTableNode * semanticAnalysis(ASTNode * tree) {
                 continue;
             }
 
-            auxMethod = aux -> child -> next;   /* MethodBody */
-            if(auxMethod -> child != NULL) {
-                auxMethod = auxMethod -> child;
-
-                while(auxMethod != NULL) {
-                    if(strcmp(auxMethod -> type, "VarDecl") == 0) {
-
-                        if(checkVariableExistance(auxMethod -> child -> next, root, auxTableMethodNode, 0) != NULL) {
-                            printf("Line %d, col %d: Symbol %s already defined\n", auxMethod -> child -> next -> line, auxMethod -> child -> next -> column, auxMethod -> child -> next -> content);
-                        }
-
-                        if(strcmp(auxMethod -> child -> type, "Bool") == 0) {
-                            auxTableNode -> next = createSymbolTableNode("boolean", auxMethod -> child -> next -> content, NULL, NULL, 0);
-                        } else {
-                            auxTableNode -> next = createSymbolTableNode(auxMethod -> child -> type, auxMethod -> child -> next -> content, NULL, NULL, 0);
-                        }
-
-                        auxTableNode = auxTableNode -> next;
-                    }
-
-                    auxMethod = auxMethod -> next;
-                }
-            }
-
             aux = aux->next;
         }
     }
@@ -399,12 +375,11 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
             } else if((strcmp(child1 -> annotation, "int") == 0 || strcmp(child1 -> annotation, "double") == 0) && (strcmp(child2 -> annotation, "int") == 0 || strcmp(child2 -> annotation, "double") == 0)) {
                 node -> annotation = strdup("boolean");
             } else {
-                node -> annotation = strdup("undef");
                 printf("Line %d, col %d: Operator %s cannot be applied to types %s, %s\n", node -> line, node -> column, node -> type, child1 -> annotation, child2 -> annotation);
             }
-        } else {
-            node -> annotation = strdup("undef");
         }
+
+        node -> annotation = strdup("boolean");
     } else if (strcmp(node->type, "Add") == 0 || strcmp(node->type, "Sub") == 0 || strcmp(node->type, "Mul") == 0 || strcmp(node->type, "Div") == 0 || strcmp(node->type, "Mod") == 0) {
         child1 = node -> child;
         child2 = node -> child -> next;
@@ -513,6 +488,26 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
                 break;
             }
             auxSymbolTable = auxSymbolTable -> next;
+        }
+    } else if(strcmp(node -> type, "If") == 0 || strcmp(node -> type, "While") == 0 || strcmp(node -> type, "DoWhile") == 0) {
+        child1 = node -> child;
+
+        ASTSemanticAnnotations(child1, symbolTable, 1);
+    } else if(strcmp(node -> type, "VarDecl") == 0) {
+        if(checkVariableExistance(node -> child -> next, symbolTable, AnnotationsCurrentMethodNode, 0) != NULL) {
+            printf("Line %d, col %d: Symbol %s already defined\n", node -> child -> next -> line, node -> child -> next -> column, node -> child -> next -> content);
+        }
+
+        SymbolTableNode * stnaux = AnnotationsCurrentMethodNode -> child;
+        
+        while(stnaux -> next != NULL) {
+            stnaux = stnaux -> next;
+        }
+
+        if(strcmp(node -> child -> type, "Bool") == 0) {
+            stnaux -> next = createSymbolTableNode("boolean", node -> child -> next -> content, NULL, NULL, 0);
+        } else {
+            stnaux -> next = createSymbolTableNode(node -> child -> type, node -> child -> next -> content, NULL, NULL, 0);
         }
     } else {
         ASTSemanticAnnotations(node->child, symbolTable, 0);
