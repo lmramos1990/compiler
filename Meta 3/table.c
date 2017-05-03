@@ -1,6 +1,6 @@
 #include "structs.h"
 
-SymbolTableNode * AnnotationsCurrentMethodNode = NULL;
+SymbolTableNode * AnnotationscurrentMethodNode = NULL;
 
 SymbolTableNode * createSymbolTableNode(char * type, char * name, char * params, char * flag, int flagMethod) {
     SymbolTableNode * newNode;
@@ -31,8 +31,8 @@ SymbolTableNode * createSymbolTableNode(char * type, char * name, char * params,
 
     newNode -> flagMethod = flagMethod;
 
-    newNode->child = NULL;
-    newNode->next = NULL;
+    newNode -> child = NULL;
+    newNode -> next = NULL;
 
     return newNode;
 }
@@ -57,32 +57,32 @@ SymbolTableNode * semanticAnalysis(ASTNode * tree) {
                     table -> child = createSymbolTableNode(aux -> child -> type, aux -> child -> next -> content, NULL, NULL, 0);
                 }
 
-                table = table->child;
+                table = table-> child;
                 flagClassCreated = 0;
             } else {
-                if (checkVariableExistance(aux -> child -> next, root, NULL, 0, 1) != NULL) {
+                if(checkVariableExistance(aux -> child -> next, root, NULL, 0, 1) != NULL) {
                     printf("Line %d, col %d: Symbol %s already defined\n", aux -> child -> next -> line, aux -> child -> next -> column, aux -> child -> next -> content);
-                    aux = aux->next;
+                    aux = aux -> next;
                     continue;
                 } else if(strcmp(aux -> child -> type, "Bool") == 0) {
                     table -> next = createSymbolTableNode("boolean", aux -> child -> next -> content, NULL, NULL, 0);
                 } else {
-                    table->next = createSymbolTableNode(aux->child->type, aux -> child -> next -> content, NULL, NULL, 0);
+                    table->next = createSymbolTableNode(aux -> child->type, aux -> child -> next -> content, NULL, NULL, 0);
                 }
 
                 table = table->next;
             }
 
-            aux = aux->next;
-        } else if (strcmp(aux->type, "MethodDecl") == 0) {
+            aux = aux -> next;
+        } else if(strcmp(aux -> type, "MethodDecl") == 0) {
             auxMethod = aux -> child -> child; /* Enter MethodHeader */
 
             currentMethod = auxMethod -> next;
 
             if(strcmp(auxMethod->type, "Bool") == 0) {
-                auxTableNode = createSymbolTableNode("boolean", auxMethod->next->content, NULL, NULL, 1);
+                auxTableNode = createSymbolTableNode("boolean", auxMethod->next-> content, NULL, NULL, 1);
             } else {
-                auxTableNode = createSymbolTableNode(auxMethod->type, auxMethod->next->content, NULL, NULL, 1);
+                auxTableNode = createSymbolTableNode(auxMethod->type, auxMethod->next-> content, NULL, NULL, 1);
             }
             auxTableMethodNode = auxTableNode;
             tablePrevious = table;
@@ -95,53 +95,60 @@ SymbolTableNode * semanticAnalysis(ASTNode * tree) {
                 table = table -> next;
             }
             if(strcmp(auxMethod -> type, "Bool") == 0) {
-                auxTableNode->child = createSymbolTableNode("boolean", "return", NULL, NULL, 0);
+                auxTableNode -> child = createSymbolTableNode("boolean", "return", NULL, NULL, 0);
             } else {
-                auxTableNode->child = createSymbolTableNode(auxMethod->type, "return", NULL, NULL, 0);
+                auxTableNode -> child = createSymbolTableNode(auxMethod->type, "return", NULL, NULL, 0);
             }
-            auxTableNode = auxTableNode->child;
+            auxTableNode = auxTableNode -> child;
 
             auxMethod = auxMethod->next->next;  /* MethodParams */
-            if (auxMethod->child != NULL) {
-                auxMethod = auxMethod->child;
+            if(auxMethod-> child != NULL) {
+                auxMethod = auxMethod-> child;
 
-                if (strcmp(auxMethod->child->type, "StringArray") == 0) {
+                if(strcmp(auxMethod-> child->type, "StringArray") == 0) {
                     sprintf(typeParams, "%s", "String[]");
-                    auxTableNode->next = createSymbolTableNode("String[]", auxMethod->child->next->content, NULL, "param", 0);
-                    auxTableNode = auxTableNode->next;
-                } else if (strcmp(auxMethod->child->type, "Bool") == 0) {
+                    auxTableNode -> next = createSymbolTableNode("String[]", auxMethod-> child->next-> content, NULL, "param", 0);
+                    auxTableNode = auxTableNode -> next;
+                } else if(strcmp(auxMethod-> child->type, "Bool") == 0) {
                     sprintf(typeParams, "%s", "boolean");
-                    auxTableNode->next = createSymbolTableNode("boolean", auxMethod->child->next->content, NULL, "param", 0);
-                    auxTableNode = auxTableNode->next;
+                    auxTableNode -> next = createSymbolTableNode("boolean", auxMethod-> child->next-> content, NULL, "param", 0);
+                    auxTableNode = auxTableNode -> next;
                 } else {
-                    sprintf(typeParams, "%c%s", (auxMethod->child->type)[0] + 'a' - 'A', (auxMethod->child->type) + 1);
-                    auxTableNode->next = createSymbolTableNode(typeParams, auxMethod->child->next->content, NULL, "param", 0);
-                    auxTableNode = auxTableNode->next;
+                    sprintf(typeParams, "%c%s", (auxMethod-> child->type)[0] + 'a' - 'A', (auxMethod-> child->type) + 1);
+                    auxTableNode -> next = createSymbolTableNode(typeParams, auxMethod-> child->next-> content, NULL, "param", 0);
+                    auxTableNode = auxTableNode -> next;
                 }
                 auxMethod = auxMethod->next;
 
-                while (auxMethod != NULL) {
+                while(auxMethod != NULL) {
                     if(checkVariableExistance(auxMethod -> child -> next, auxTableMethodNode, auxTableMethodNode, 1, 0) != NULL) {
                         printf("Line %d, col %d: Symbol %s already defined\n", auxMethod -> child -> next -> line, auxMethod -> child -> next -> column, auxMethod -> child -> next -> content);
+
+                        if(strcmp(auxMethod-> child->type, "Bool") == 0) {
+                            sprintf(typeParams, "%s,%s", typeParams, "boolean");
+                        } else {
+                            sprintf(typeParams, "%s,%c%s", typeParams, (auxMethod-> child->type)[0] + 'a' - 'A', (auxMethod-> child->type) + 1);
+                        }
+                    } else {
+                        if(strcmp(auxMethod-> child->type, "Bool") == 0) {
+                            sprintf(typeParams, "%s,%s", typeParams, "boolean");
+                            auxTableNode -> next = createSymbolTableNode("boolean", auxMethod-> child->next-> content, NULL, "param", 0);
+                        } else {
+                            sprintf(typeParams, "%s,%c%s", typeParams, (auxMethod-> child->type)[0] + 'a' - 'A', (auxMethod-> child->type) + 1);
+                            auxTableNode -> next = createSymbolTableNode(auxMethod-> child->type, auxMethod-> child->next-> content, NULL, "param", 0);
+                        }
+                        auxTableNode = auxTableNode -> next;
                     }
 
-                    if (strcmp(auxMethod->child->type, "Bool") == 0) {
-                        sprintf(typeParams, "%s,%s", typeParams, "boolean");
-                        auxTableNode->next = createSymbolTableNode("boolean", auxMethod->child->next->content, NULL, "param", 0);
-                    } else {
-                        sprintf(typeParams, "%s,%c%s", typeParams, (auxMethod->child->type)[0] + 'a' - 'A', (auxMethod->child->type) + 1);
-                        auxTableNode->next = createSymbolTableNode(auxMethod->child->type, auxMethod->child->next->content, NULL, "param", 0);
-                    }
-                    auxTableNode = auxTableNode->next;
                     auxMethod = auxMethod->next;
                 }
 
                 char newTypeParams[1024];
                 sprintf(newTypeParams, "(%s)", typeParams);
 
-                auxTableMethodNode->params = strdup(newTypeParams);
+                auxTableMethodNode -> params = strdup(newTypeParams);
             } else {
-                auxTableMethodNode->params = strdup("()");
+                auxTableMethodNode -> params = strdup("()");
             }
 
             SymbolTableNode * stnaux = root -> child;
@@ -160,13 +167,14 @@ SymbolTableNode * semanticAnalysis(ASTNode * tree) {
             }
 
             if(sameMethod) {
+                aux -> flagSkip = 1;
                 table = tablePrevious;
                 table -> next = NULL;
                 aux = aux -> next;
                 continue;
             }
 
-            aux = aux->next;
+            aux = aux -> next;
         }
     }
 
@@ -176,49 +184,49 @@ SymbolTableNode * semanticAnalysis(ASTNode * tree) {
 void printTable(SymbolTableNode *symbolTable) {
     SymbolTableNode *aux = symbolTable, *aux2;
 
-    if (symbolTable->child == NULL) {
-        printf("===== Class %s Symbol Table =====\n", aux->name);
+    if(symbolTable-> child == NULL) {
+        printf("===== Class %s Symbol Table =====\n", aux -> name);
         return;
     }
 
-    while (aux != NULL) {
-        if (strcmp(aux->type, "Class") == 0) {
-            printf("===== Class %s Symbol Table =====\n", aux->name);
-            aux = aux->child;
+    while(aux != NULL) {
+        if(strcmp(aux -> type, "Class") == 0) {
+            printf("===== Class %s Symbol Table =====\n", aux -> name);
+            aux = aux -> child;
         } else {
-            if (aux->flag == NULL) {
-                if (aux->params == NULL) {
-                    printf("%s\t\t%s\n", aux->name, aux->type);
+            if(aux -> flag == NULL) {
+                if(aux -> params == NULL) {
+                    printf("%s\t\t%s\n", aux -> name, aux -> type);
                 } else {
-                    printf("%s\t%s\t%s\n", aux->name, aux->params, aux->type);
+                    printf("%s\t%s\t%s\n", aux -> name, aux -> params, aux -> type);
                 }
             } else {
-                if (aux->params == NULL) {
-                    printf("%s\t\t%s\t%s\n", aux->name, aux->type, aux->flag);
+                if(aux -> params == NULL) {
+                    printf("%s\t\t%s\t%s\n", aux -> name, aux -> type, aux -> flag);
                 } else {
-                    printf("%s\t%s\t%s\t%s\n", aux->name, aux->params, aux->type, aux->flag);
+                    printf("%s\t%s\t%s\t%s\n", aux -> name, aux -> params, aux -> type, aux -> flag);
                 }
             }
-            aux = aux->next;
+            aux = aux -> next;
         }
     }
 
-    aux = symbolTable->child;
+    aux = symbolTable-> child;
 
-    while (aux != NULL) {
-        if (aux->flagMethod) {
-            printf("\n===== Method %s%s Symbol Table =====\n", aux->name, aux->params);
+    while(aux != NULL) {
+        if(aux -> flagMethod) {
+            printf("\n===== Method %s%s Symbol Table =====\n", aux -> name, aux -> params);
 
-            aux2 = aux->child;
-            while (aux2 != NULL) {
-                if (aux2->flag == NULL) {
-                    if (aux2->params == NULL) {
+            aux2 = aux -> child;
+            while(aux2 != NULL) {
+                if(aux2->flag == NULL) {
+                    if(aux2->params == NULL) {
                         printf("%s\t\t%s\n", aux2->name, aux2->type);
                     } else {
                         printf("%s\t%s\t%s\n", aux2->name, aux2->params, aux2->type);
                     }
                 } else {
-                    if (aux2->params == NULL) {
+                    if(aux2->params == NULL) {
                         printf("%s\t\t%s\t%s\n", aux2->name, aux2->type, aux2->flag);
                     } else {
                         printf("%s\t%s\t%s\t%s\n", aux2->name, aux2->params, aux2->type, aux2->flag);
@@ -229,22 +237,22 @@ void printTable(SymbolTableNode *symbolTable) {
             }
         }
 
-        aux = aux->next;
+        aux = aux -> next;
     }
 }
 
 void destroySymbolTable(SymbolTableNode *symbolTable) {
-    if (symbolTable == NULL)
+    if(symbolTable == NULL)
         return;
 
     free(symbolTable->type);
     free(symbolTable->name);
-    if (symbolTable->params != NULL)
+    if(symbolTable->params != NULL)
         free(symbolTable->params);
-    if (symbolTable->flag != NULL)
+    if(symbolTable->flag != NULL)
         free(symbolTable->flag);
 
-    destroySymbolTable(symbolTable->child);
+    destroySymbolTable(symbolTable-> child);
     destroySymbolTable(symbolTable->next);
 }
 
@@ -261,14 +269,15 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
         return;
     }
 
+    if(node -> flagSkip) {
+        ASTSemanticAnnotations(node -> next, symbolTable, 0);
+        return;
+    }
+
     if(flagVariable) {
         if(strcmp(node -> type, "Id") == 0) {
 
-            // check existance in globals
-            // check existance in parameters
-            // cannot allow parameters with the same name to be declared
-
-            varType = checkVariableExistance(node, symbolTable, AnnotationsCurrentMethodNode, 1, 1);
+            varType = checkVariableExistance(node, symbolTable, AnnotationscurrentMethodNode, 1, 1);
 
             if(varType != NULL) {
                 node -> annotation = strdup(varType);
@@ -288,6 +297,20 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
             node -> annotation = strdup("int");
             return;
         } else if(strcmp(node -> type, "RealLit") == 0) {
+
+            char * decimal = strdup(node -> content);
+            char * integer = NULL;
+            integer = strsep(&decimal, ".");
+
+            char * number = parseNumbers(integer);
+
+            if(strlen(number) > 10 || atol(number) >= 2147483648) {
+                printf("Line %d, col %d: Number %s out of bounds\n", node -> line, node -> column, node -> content);
+            }
+
+            free(number);
+            free(integer);
+
             node -> annotation = strdup("double");
             return;
         } else if(strcmp(node -> type, "BoolLit") == 0) {
@@ -323,6 +346,9 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
         child1 = node -> child;
         ASTNode * params = child1 -> next;
 
+        node -> line = child1->line;
+        node -> column = child1-> column;
+
         while(params != NULL) {
             ASTSemanticAnnotations(params, symbolTable, 1);
             params = params -> next;
@@ -356,8 +382,8 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
         }
 
     } else if(strcmp(node -> type, "ParseArgs") == 0) {
-        child1 = node->child;
-        child2 = node->child->next;
+        child1 = node -> child;
+        child2 = node -> child->next;
 
         ASTSemanticAnnotations(child1, symbolTable, 1);
         ASTSemanticAnnotations(child2, symbolTable, 1);
@@ -368,14 +394,14 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
                     node -> annotation = strdup("int");
                 } else {
                     node -> annotation = strdup("undef");
-                    printf("Line %d, col %d: Incompatible type %s in %s statement\n", node -> line, node -> column, child2 -> annotation, node -> type);
+                    printf("Line %d, col %d: Incompatible type %s in Integer.parseInt statement\n", node -> line, node -> column, child2 -> annotation);
                 }
             } else {
                 node -> annotation = strdup("undef");
             }
         } else {
             node -> annotation = strdup("undef");
-            printf("Line %d, col %d: Incompatible type undef in %s statement\n", node -> line, node -> column, node -> type);
+            printf("Line %d, col %d: Incompatible type undef in Integer.parseInt statement\n", node -> line, node -> column);
         }
     } else if(strcmp(node -> type, "And") == 0 || strcmp(node -> type, "Or") == 0 || strcmp(node -> type, "Eq") == 0 || strcmp(node -> type, "Geq") == 0 || strcmp(node -> type, "Gt") == 0 || strcmp(node -> type, "Leq") == 0 || strcmp(node -> type, "Lt") == 0 || strcmp(node -> type, "Neq") == 0) {
         child1 = node -> child;
@@ -413,10 +439,12 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
                 node -> annotation = strdup("boolean");
                 printf("Line %d, col %d: Operator %s cannot be applied to types %s, %s\n", node -> line, node -> column, operator, child1 -> annotation, child2 -> annotation);
             }
+        } else {
+            node -> annotation = strdup("boolean");
         }
 
         free(operator);
-    } else if (strcmp(node->type, "Add") == 0 || strcmp(node->type, "Sub") == 0 || strcmp(node->type, "Mul") == 0 || strcmp(node->type, "Div") == 0 || strcmp(node->type, "Mod") == 0) {
+    } else if(strcmp(node -> type, "Add") == 0 || strcmp(node -> type, "Sub") == 0 || strcmp(node -> type, "Mul") == 0 || strcmp(node -> type, "Div") == 0 || strcmp(node -> type, "Mod") == 0) {
         child1 = node -> child;
         child2 = node -> child -> next;
 
@@ -493,8 +521,11 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
         child1 = node -> child;
         ASTSemanticAnnotations(child1, symbolTable, 1);
 
+        node -> line = child1 -> line;
+        node -> column = child1 -> column;
+
         if(strcmp(child1 -> annotation, "undef") == 0) {
-            printf("Line %d, col %d: Operator %s cannot be applied to type %s\n", node -> line, node -> column, node -> type, child1 -> annotation);
+            printf("Line %d, col %d: Incompatible type %s in System.out.println statement\n", node -> line, node -> column, child1 -> annotation);
         }
     } else if(strcmp(node -> type, "Length") == 0) {
         child1 = node -> child;
@@ -506,63 +537,83 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
                 node -> annotation = strdup("int");
             } else {
                 node -> annotation = strdup("undef");
-                printf("Line %d, col %d: Operator %s cannot be applied to type %s\n", node -> line, node -> column, node -> type, child1 -> annotation);
+                printf("Line %d, col %d: Operator length cannot be applied to type %s\n", node -> line, node -> column, child1 -> annotation);
             }
         } else {
             node -> annotation = strdup("undef");
-            printf("Line %d, col %d: Operator %s cannot be applied to type %s\n", node -> line, node -> column, node -> type, child1 -> annotation);
+            printf("Line %d, col %d: Operator length cannot be applied to type %s\n", node -> line, node -> column, child1 -> annotation);
         }
     } else if(strcmp(node -> type, "Return") == 0) {
         child1 = node -> child;
 
         if(child1 == NULL) {
-            if(strcmp(AnnotationsCurrentMethodNode -> type, "void") != 0) {
-                printf("Line %d, col %d: Incompatible type void in %s statement\n", node -> line, node -> column, node -> type);
+            if(strcmp(AnnotationscurrentMethodNode -> type, "void") != 0) {
+                printf("Line %d, col %d: Incompatible type void in return statement\n", node -> line, node -> column);
             }
         } else {
             ASTSemanticAnnotations(child1, symbolTable, 1);
 
             if(strcmp(child1 -> annotation, "undef") != 0) {
-                if(strcmp(AnnotationsCurrentMethodNode -> type, child1 -> annotation) != 0) {
-                    if(strcmp(AnnotationsCurrentMethodNode -> type, "int") == 0 && strcmp(child1 -> annotation, "double") == 0) {
-                        printf("Line %d, col %d: Incompatible type %s in %s statement\n", node -> line, node -> column, child1 -> annotation, node -> type);
+                if(strcmp(AnnotationscurrentMethodNode -> type, child1 -> annotation) != 0) {
+                    if(strcmp(AnnotationscurrentMethodNode -> type, "int") == 0 && strcmp(child1 -> annotation, "double") == 0) {
+                        printf("Line %d, col %d: Incompatible type %s in return statement\n", child1 -> line, child1 -> column, child1 -> annotation);
+                    } else if(strcmp(AnnotationscurrentMethodNode -> type, "void") == 0 && child1 -> annotation != NULL) {
+                        printf("Line %d, col %d: Incompatible type %s in return statement\n", child1 -> line, child1 -> column, child1 -> annotation);
                     }
                 }
             } else {
-                printf("Line %d, col %d: Incompatible type undef in %s statement\n", node -> line, node -> column, node -> type);
+                printf("Line %d, col %d: Incompatible type undef in return statement\n", child1 -> line, child1 -> column);
             }
         }
     } else if(strcmp(node -> type, "MethodHeader") == 0) {
-        if(AnnotationsCurrentMethodNode == NULL)
+        if(AnnotationscurrentMethodNode == NULL)
             auxSymbolTable = symbolTable -> child;
         else {
-            auxSymbolTable = AnnotationsCurrentMethodNode -> next;
+            auxSymbolTable = AnnotationscurrentMethodNode -> next;
         }
 
         while(auxSymbolTable != NULL) {
             if(auxSymbolTable -> flagMethod) {
-                AnnotationsCurrentMethodNode = auxSymbolTable;
+                AnnotationscurrentMethodNode = auxSymbolTable;
                 break;
             }
             auxSymbolTable = auxSymbolTable -> next;
         }
-    } else if(strcmp(node -> type, "If") == 0 || strcmp(node -> type, "While") == 0 || strcmp(node -> type, "DoWhile") == 0) {
+    } else if(strcmp(node -> type, "If") == 0) {
         child1 = node -> child;
 
-        if(strcmp(node -> type, "DoWhile") == 0) {
-            child1 = node -> child -> next;
-            ASTSemanticAnnotations(child1, symbolTable, 1);
-            ASTSemanticAnnotations(node -> child, symbolTable, 0);
-        } else {
-            ASTSemanticAnnotations(child1, symbolTable, 1);
-            ASTSemanticAnnotations(node -> child -> next, symbolTable, 0);
-        }
-    } else if(strcmp(node -> type, "VarDecl") == 0) {
-        if(checkVariableExistance(node -> child -> next, symbolTable, AnnotationsCurrentMethodNode, 1, 0) != NULL) {
-            printf("Line %d, col %d: Symbol %s already defined\n", node -> child -> next -> line, node -> child -> next -> column, node -> child -> next -> content);
+        ASTSemanticAnnotations(child1, symbolTable, 1);
+        ASTSemanticAnnotations(child1 -> next, symbolTable, 0);
+
+        if(strcmp(child1 -> annotation, "boolean") != 0) {
+            printf("Line %d, col %d: Incompatible type %s in if statement\n", child1 -> line, child1 -> column, child1 -> annotation);
         }
 
-        SymbolTableNode * stnaux = AnnotationsCurrentMethodNode -> child;
+    } else if(strcmp(node -> type, "While") == 0) {
+        child1 = node -> child;
+
+        ASTSemanticAnnotations(child1, symbolTable, 1);
+        ASTSemanticAnnotations(node -> child -> next, symbolTable, 0);
+
+        if(strcmp(child1 -> annotation, "boolean") != 0) {
+            printf("Line %d, col %d: Incompatible type %s in while statement\n", child1 -> line, child1 -> column, child1 -> annotation);
+        }
+    } else if(strcmp(node -> type, "DoWhile") == 0) {
+        child1 = node -> child -> next;
+        ASTSemanticAnnotations(child1, symbolTable, 1);
+        ASTSemanticAnnotations(node -> child, symbolTable, 0);
+
+        if(strcmp(child1 -> annotation, "boolean") != 0) {
+            printf("Line %d, col %d: Incompatible type %s in while statement\n", child1 -> line, child1 -> column, child1 -> annotation);
+        }
+    } else if(strcmp(node -> type, "VarDecl") == 0) {
+        if(checkVariableExistance(node -> child -> next, symbolTable, AnnotationscurrentMethodNode, 1, 0) != NULL) {
+            printf("Line %d, col %d: Symbol %s already defined\n", node -> child -> next -> line, node -> child -> next -> column, node -> child -> next -> content);
+            ASTSemanticAnnotations(node -> next, symbolTable, 0);
+            return;
+        }
+
+        SymbolTableNode * stnaux = AnnotationscurrentMethodNode -> child;
         while(stnaux -> next != NULL) {
             stnaux = stnaux -> next;
         }
@@ -573,10 +624,10 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
             stnaux -> next = createSymbolTableNode(node -> child -> type, node -> child -> next -> content, NULL, NULL, 0);
         }
     } else {
-        ASTSemanticAnnotations(node->child, symbolTable, 0);
+        ASTSemanticAnnotations(node -> child, symbolTable, 0);
     }
 
-    ASTSemanticAnnotations(node->next, symbolTable, 0);
+    ASTSemanticAnnotations(node -> next, symbolTable, 0);
 }
 
 char * checkVariableExistance(ASTNode * astnode, SymbolTableNode * stnode, SymbolTableNode * currentMethodNode, int flagLocal, int flagGlobal) {
@@ -587,8 +638,8 @@ char * checkVariableExistance(ASTNode * astnode, SymbolTableNode * stnode, Symbo
         return NULL;
     }
 
-    if(astnode->content != NULL) {
-        variableName = astnode->content;
+    if(astnode -> content != NULL) {
+        variableName = astnode -> content;
     } else {
         return NULL;
     }
@@ -596,26 +647,26 @@ char * checkVariableExistance(ASTNode * astnode, SymbolTableNode * stnode, Symbo
     // check local variables
     if(flagLocal && currentMethodNode != NULL) {
         // check local variables
-        aux = currentMethodNode->child->next;
+        aux = currentMethodNode -> child -> next;
 
         while(aux != NULL) {
-            if(strcmp(aux->name, variableName) == 0) {
-                return aux->type;
+            if(strcmp(aux -> name, variableName) == 0) {
+                return aux -> type;
             }
 
-            aux = aux->next;
+            aux = aux -> next;
         }
     }
 
     // check global variables
     if(flagGlobal) {
-        aux = stnode->child;
+        aux = stnode -> child;
         while(aux != NULL) {
-            if(!(aux->flagMethod) && strcmp(aux->name, variableName) == 0) {
-                return aux->type;
+            if(!(aux -> flagMethod) && strcmp(aux -> name, variableName) == 0) {
+                return aux -> type;
             }
 
-            aux = aux->next;
+            aux = aux -> next;
         }
     }
 
@@ -676,7 +727,7 @@ char * getMethodType(ASTNode * astnode, SymbolTableNode * stnode) {
         aux = aux -> next;
     }
 
-    if (lastFit != NULL) {
+    if(lastFit != NULL) {
         astnode -> annotation = strdup(lastFit -> params);
         return lastFit -> type;
     } else {

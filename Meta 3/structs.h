@@ -5,6 +5,7 @@
 typedef struct tree_node {
     char * type;
     char * content;
+    int flagSkip;
     int line;
     int column;
     struct tree_node * next;
