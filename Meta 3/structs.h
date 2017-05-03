@@ -37,7 +37,7 @@ SymbolTableNode * semanticAnalysis(ASTNode * tree);
 void printTable(SymbolTableNode * symbolTable);
 void destroySymbolTable(SymbolTableNode * symbolTable);
 void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int flagVariable);
-char * checkVariableExistance(ASTNode * astnode, SymbolTableNode * stnode, SymbolTableNode * currentMethodNode, int flagLocal);
+char * checkVariableExistance(ASTNode * astnode, SymbolTableNode * stnode, SymbolTableNode * currentMethodNode, int flagLocal, int flagGlobal);
 char * getMethodType(ASTNode * astnode, SymbolTableNode * stnode);
 int isSameMethod(SymbolTableNode * current, SymbolTableNode * method);
 char * parseNumbers(char * number);

@@ -158,7 +158,7 @@ Statement2:
     ;
 
 Assignment:
-        ID '=' Expr2                                    {  $$ = createASTNode("Assign", NULL, createASTNode("Id", $1, $3, 's'), 'c'); }
+        ID '=' Expr2                                    {  $$ = createASTNode("Assign", $2, createASTNode("Id", $1, $3, 's'), 'c'); }
     ;
 
 MethodInvocation:

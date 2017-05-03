@@ -7,7 +7,10 @@ ASTNode * createASTNode(char * typeNode, Payload * content, ASTNode * relatedNod
 
     newNode -> type = strdup(typeNode);
     if(content != NULL) {
-        newNode -> content = content -> value;
+        if (content -> value == NULL)
+            newNode -> content = NULL;
+        else
+            newNode -> content = content -> value;
         newNode -> line = content -> line;
         newNode -> column = content -> column;
 
