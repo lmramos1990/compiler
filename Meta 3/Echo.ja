@@ -1,10 +1,22 @@
-class gcd{
+class gcd {
+    public static int main() {
+        return 1;
+        return 1.0;
+        return true;
+        return integer();
+        return floatingNumber();
+        return booleanCharacters();
+    }
 
-    public static void main(String[] args) {
-        int a;
+    public static int integer() {
+        return 1;
+    }
 
-        if(a && true) {
-            a = 1;
-        }
+    public static double floatingNumber() {
+        return 1.0;
+    }
+
+    public static boolean booleanCharacters() {
+        return true;
     }
 }

@@ -538,36 +538,47 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
         ASTSemanticAnnotations(child1, symbolTable, 1);
 
         if(strcmp(child1 -> annotation, "undef") != 0) {
-            if(strcmp(child1 -> annotation, "String[]") == 0) {
-                node -> annotation = strdup("int");
-            } else {
-                node -> annotation = strdup("undef");
+            if(strcmp(child1 -> annotation, "String[]") != 0) {
                 printf("Line %d, col %d: Operator .length cannot be applied to type %s\n", node -> line, node -> column, child1 -> annotation);
             }
         } else {
-            node -> annotation = strdup("undef");
             printf("Line %d, col %d: Operator .length cannot be applied to type %s\n", node -> line, node -> column, child1 -> annotation);
         }
+
+        node -> annotation = strdup("int");
     } else if(strcmp(node -> type, "Return") == 0) {
         child1 = node -> child;
+        int endFlag = 0;
 
-        if(child1 == NULL) {
-            if(strcmp(AnnotationscurrentMethodNode -> type, "void") != 0) {
-                printf("Line %d, col %d: Incompatible type void in return statement\n", node -> line, node -> column);
+        ASTSemanticAnnotations(child1, symbolTable, 1);
+
+        if(strcmp(AnnotationscurrentMethodNode -> type, "void") == 0) {
+            if(child1 != NULL) {
+                printf("Line %d, col %d: Incompatible type %s in return statement\n", child1 -> line, child1 -> column, child1 -> annotation);
             }
         } else {
-            ASTSemanticAnnotations(child1, symbolTable, 1);
-
-            if(strcmp(child1 -> annotation, "undef") != 0) {
+            if(child1 != NULL) {
                 if(strcmp(AnnotationscurrentMethodNode -> type, child1 -> annotation) != 0) {
-                    if(strcmp(AnnotationscurrentMethodNode -> type, "int") == 0 && strcmp(child1 -> annotation, "double") == 0) {
+                    if(strcmp(child1 -> type, "Call") == 0) {
                         printf("Line %d, col %d: Incompatible type %s in return statement\n", child1 -> line, child1 -> column, child1 -> annotation);
-                    } else if(strcmp(AnnotationscurrentMethodNode -> type, "void") == 0 && child1 -> annotation != NULL) {
+                        endFlag = 1;
+                    }
+
+                    if(!endFlag && strcmp(AnnotationscurrentMethodNode -> type, "int") == 0 && strcmp(child1 -> annotation, "double") == 0) {
+                        printf("Line %d, col %d: Incompatible type %s in return statement\n", child1 -> line, child1 -> column, child1 -> annotation);
+                        endFlag = 1;
+                    }
+
+                    if(!endFlag) printf("Line %d, col %d: Incompatible type %s in return statement\n", child1 -> line, child1 -> column, child1 -> annotation);
+                } else {
+                    if(strcmp(child1 -> type, "Call") == 0) {
                         printf("Line %d, col %d: Incompatible type %s in return statement\n", child1 -> line, child1 -> column, child1 -> annotation);
                     }
                 }
             } else {
-                printf("Line %d, col %d: Incompatible type undef in return statement\n", child1 -> line, child1 -> column);
+                if(strcmp(AnnotationscurrentMethodNode -> type, "void") != 0) {
+                    printf("Line %d, col %d: Incompatible type void in return statement\n", node -> line, node -> column);
+                }
             }
         }
     } else if(strcmp(node -> type, "MethodHeader") == 0) {
