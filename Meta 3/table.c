@@ -533,17 +533,15 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
     } else if(strcmp(node -> type, "Return") == 0) {
         child1 = node -> child;
 
+        ASTSemanticAnnotations(child1, symbolTable, 1);
+
         if(strcmp(AnnotationscurrentMethodNode -> type, "void") == 0) {
             if(child1 != NULL) {
                 printf("Line %d, col %d: Incompatible type %s in return statement\n", child1 -> line, child1 -> column, child1 -> annotation);
             }
         } else {
-            ASTSemanticAnnotations(child1, symbolTable, 1);
-
             if(child1 != NULL) {
-                if (strcmp(child1 -> type, "Call") == 0) {
-                    printf("Line %d, col %d: Incompatible type %s in return statement\n", child1 -> line, child1 -> column, child1 -> annotation);
-                } else if (strcmp(AnnotationscurrentMethodNode -> type, child1 -> annotation) != 0) {
+                if (strcmp(AnnotationscurrentMethodNode -> type, child1 -> annotation) != 0) {
                     if(!(strcmp(AnnotationscurrentMethodNode -> type, "double") == 0 && strcmp(child1 -> annotation, "int") == 0)) {
                         printf("Line %d, col %d: Incompatible type %s in return statement\n", child1 -> line, child1 -> column, child1 -> annotation);
                     }

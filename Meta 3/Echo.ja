@@ -1,34 +1,27 @@
 class gcd {
-    public static int i;
-    public static double d;
-    public static boolean b;
+    public static int hello() {
+        int a;
+        double b;
 
-    public static int main(String[] args) {
-/*        Integer.parseInt(args[0]);
+        boolean c;
+        c = 1;
 
-        Integer.parseInt(args[true]);
-        Integer.parseInt(args[b]);
-        Integer.parseInt(b[i]);
-        Integer.parseInt(b[b]);
+        double a;
 
-        Integer.parseInt(i[0]);
-        Integer.parseInt(args[i]);
-*/
-/*
-        System.out.println(i);
-        System.out.println(d);
-        System.out.println(b);
-        System.out.println(true);
-        System.out.println(args);
-        System.out.println(i+i);
-*/
+        if(coisab()) {
 
-        if(1) {
-            i = false;
-            b = 1;
-        } else {
-            d = true;
-            i = 2.0;
         }
+
     }
+
+    public static void main() {
+        return coisab();
+    }
+
+    public static int coisab() {
+        hello();
+        return 1;
+    }
+
+
 }
