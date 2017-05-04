@@ -393,21 +393,10 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
         ASTSemanticAnnotations(child1, symbolTable, 1);
         ASTSemanticAnnotations(child2, symbolTable, 1);
 
-        if(strcmp(child1 -> annotation, "undef") != 0 && strcmp(child2 -> annotation, "undef") != 0) {
-            if(strcmp(child1 -> annotation, "String[]") == 0) {
-                if(strcmp(child2 -> annotation, "int") == 0) {
-                    node -> annotation = strdup("int");
-                } else {
-                    node -> annotation = strdup("undef");
-                    printf("Line %d, col %d: Incompatible type %s in Integer.parseInt statement\n", node -> line, node -> column, child2 -> annotation);
-                }
-            } else {
-                node -> annotation = strdup("undef");
-            }
-        } else {
-            node -> annotation = strdup("undef");
-            printf("Line %d, col %d: Incompatible type undef in Integer.parseInt statement\n", node -> line, node -> column);
+        if(strcmp(child1 -> annotation, "String[]") != 0 || strcmp(child2 -> annotation, "int") != 0) {
+            printf("Line %d, col %d: Operator Integer.parseInt cannot be applied to types %s, %s\n", node -> line, node -> column, child1 -> annotation, child2 -> annotation);
         }
+        node -> annotation = strdup("int");
     } else if(strcmp(node -> type, "And") == 0 || strcmp(node -> type, "Or") == 0 || strcmp(node -> type, "Eq") == 0 || strcmp(node -> type, "Geq") == 0 || strcmp(node -> type, "Gt") == 0 || strcmp(node -> type, "Leq") == 0 || strcmp(node -> type, "Lt") == 0 || strcmp(node -> type, "Neq") == 0) {
         child1 = node -> child;
         child2 = node -> child -> next;
@@ -475,8 +464,6 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
                 node -> annotation = strdup(child1 -> annotation);
             } else if((strcmp(child1 -> annotation, "double") == 0 && strcmp(child2 -> annotation, "int") == 0) || (strcmp(child1 -> annotation, "int") == 0 && strcmp(child2 -> annotation, "double") == 0)) {
                 node -> annotation = strdup("double");
-            } else if() {
-
             } else {
                 node -> annotation = strdup("undef");
                 printf("Line %d, col %d: Operator %c cannot be applied to types %s, %s\n", node -> line, node -> column, operator, child1 -> annotation, child2 -> annotation);
@@ -531,7 +518,7 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
         node -> line = child1 -> line;
         node -> column = child1 -> column;
 
-        if(strcmp(child1 -> annotation, "undef") == 0) {
+        if(strcmp(child1 -> annotation, "undef") == 0 || strcmp(child1 -> annotation, "String[]") == 0) {
             printf("Line %d, col %d: Incompatible type %s in System.out.println statement\n", node -> line, node -> column, child1 -> annotation);
         }
     } else if(strcmp(node -> type, "Length") == 0) {
@@ -539,14 +526,9 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
 
         ASTSemanticAnnotations(child1, symbolTable, 1);
 
-        if(strcmp(child1 -> annotation, "undef") != 0) {
-            if(strcmp(child1 -> annotation, "String[]") != 0) {
-                printf("Line %d, col %d: Operator .length cannot be applied to type %s\n", node -> line, node -> column, child1 -> annotation);
-            }
-        } else {
+        if(strcmp(child1 -> annotation, "String[]") != 0) {
             printf("Line %d, col %d: Operator .length cannot be applied to type %s\n", node -> line, node -> column, child1 -> annotation);
         }
-
         node -> annotation = strdup("int");
     } else if(strcmp(node -> type, "Return") == 0) {
         child1 = node -> child;
@@ -570,31 +552,6 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
                 printf("Line %d, col %d: Incompatible type void in return statement\n", node -> line, node -> column);
             }
         }
-
-        /*
-
-        child1 = node -> child;
-
-        if(child1 == NULL) {
-            if(strcmp(AnnotationscurrentMethodNode -> type, "void") != 0) {
-                printf("Line %d, col %d: Incompatible type void in return statement\n", node -> line, node -> column);
-            }
-        } else {
-            ASTSemanticAnnotations(child1, symbolTable, 1);
-
-            if(strcmp(child1 -> annotation, "undef") != 0) {
-                if(strcmp(AnnotationscurrentMethodNode -> type, child1 -> annotation) != 0) {
-                    if(strcmp(AnnotationscurrentMethodNode -> type, "int") == 0 && strcmp(child1 -> annotation, "double") == 0) {
-                        printf("Line %d, col %d: Incompatible type %s in return statement\n", child1 -> line, child1 -> column, child1 -> annotation);
-                    } else if(strcmp(AnnotationscurrentMethodNode -> type, "void") == 0 && child1 -> annotation != NULL) {
-                        printf("Line %d, col %d: Incompatible type %s in return statement\n", child1 -> line, child1 -> column, child1 -> annotation);
-                    }
-                }
-            } else {
-                printf("Line %d, col %d: Incompatible type undef in return statement\n", child1 -> line, child1 -> column);
-            }
-        }
-        */
     } else if(strcmp(node -> type, "MethodHeader") == 0) {
         if(AnnotationscurrentMethodNode == NULL)
             auxSymbolTable = symbolTable -> child;
@@ -613,23 +570,21 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
         child1 = node -> child;
 
         ASTSemanticAnnotations(child1, symbolTable, 1);
-        ASTSemanticAnnotations(child1 -> next, symbolTable, 0);
-
         if(strcmp(child1 -> annotation, "boolean") != 0) {
             printf("Line %d, col %d: Incompatible type %s in if statement\n", child1 -> line, child1 -> column, child1 -> annotation);
         }
-
+        ASTSemanticAnnotations(child1 -> next, symbolTable, 0);
     } else if(strcmp(node -> type, "While") == 0) {
         child1 = node -> child;
 
         ASTSemanticAnnotations(child1, symbolTable, 1);
-        ASTSemanticAnnotations(node -> child -> next, symbolTable, 0);
-
         if(strcmp(child1 -> annotation, "boolean") != 0) {
             printf("Line %d, col %d: Incompatible type %s in while statement\n", child1 -> line, child1 -> column, child1 -> annotation);
         }
+        ASTSemanticAnnotations(node -> child -> next, symbolTable, 0);
     } else if(strcmp(node -> type, "DoWhile") == 0) {
         child1 = node -> child -> next;
+
         ASTSemanticAnnotations(child1, symbolTable, 1);
         ASTSemanticAnnotations(node -> child, symbolTable, 0);
 
