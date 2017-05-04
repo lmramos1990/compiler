@@ -288,7 +288,7 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
             return;
         } else if(strcmp(node -> type, "DecLit") == 0) {
 
-            char * number = parseNumbers(node -> content);
+            char * number = parseNumbers(node -> content, 0);
 
             if(strlen(number) > 10 || atol(number) >= 2147483648) {
                 printf("Line %d, col %d: Number %s out of bounds\n", node -> line, node -> column, node -> content);
@@ -302,9 +302,14 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
             char * integer = NULL;
             integer = strsep(&decimal, ".");
 
-            char * number = parseNumbers(integer);
-
-            if(strlen(number) > 10 || atol(number) >= 2147483648) {
+            char * number = parseNumbers(integer, 1);
+/*
+            if (strlen(number) >=17) {
+                char aux = number[17];
+                number[17] = '\0';
+            }
+*/
+            if(strlen(number) > 309 || atoll(number) > 17976931348623157) {
                 printf("Line %d, col %d: Number %s out of bounds\n", node -> line, node -> column, node -> content);
             }
 
@@ -329,7 +334,7 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
         ASTSemanticAnnotations(child1, symbolTable, 1);
         ASTSemanticAnnotations(child2, symbolTable, 1);
 
-        if(strcmp(child1 -> annotation, "undef") != 0 && strcmp(child2 -> annotation, "undef") != 0) {
+        if(strcmp(child1 -> annotation, "undef") != 0 && strcmp(child2 -> annotation, "undef") != 0 && strcmp(child1 -> annotation, "String[]") != 0 && strcmp(child2 -> annotation, "String[]") != 0) {
             if(strcmp(child1 -> annotation, child2 -> annotation) == 0) {
                 node -> annotation = strdup(child1 -> annotation);
             } else if(strcmp(child1 -> annotation, "double") == 0 && strcmp(child2 -> annotation, "int") == 0) {
@@ -537,11 +542,19 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
                 node -> annotation = strdup("int");
             } else {
                 node -> annotation = strdup("undef");
+<<<<<<< HEAD
                 printf("Line %d, col %d: Operator .length cannot be applied to type %s\n", node -> line, node -> column, child1 -> annotation);
             }
         } else {
             node -> annotation = strdup("undef");
             printf("Line %d, col %d: Operator .length cannot be applied to type %s\n", node -> line, node -> column, child1 -> annotation);
+=======
+                printf("Line %d, col %d: Operator length cannot be applied to type %s\n", child1 -> line, child1 -> column, child1 -> annotation);
+            }
+        } else {
+            node -> annotation = strdup("undef");
+            printf("Line %d, col %d: Operator length cannot be applied to type %s\n", child1 -> line, child1 -> column, child1 -> annotation);
+>>>>>>> d1d95587b6ef36b2afe176897c8f57cac8f19dc3
         }
     } else if(strcmp(node -> type, "Return") == 0) {
         child1 = node -> child;
@@ -604,7 +617,7 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
         ASTSemanticAnnotations(node -> child, symbolTable, 0);
 
         if(strcmp(child1 -> annotation, "boolean") != 0) {
-            printf("Line %d, col %d: Incompatible type %s in while statement\n", child1 -> line, child1 -> column, child1 -> annotation);
+            printf("Line %d, col %d: Incompatible type %s in do statement\n", child1 -> line, child1 -> column, child1 -> annotation);
         }
     } else if(strcmp(node -> type, "VarDecl") == 0) {
         if(checkVariableExistance(node -> child -> next, symbolTable, AnnotationscurrentMethodNode, 1, 0) != NULL) {
@@ -753,19 +766,65 @@ int isSameMethod(SymbolTableNode * current, SymbolTableNode * method) {
     }
 }
 
-char * parseNumbers(char * number) {
-    int i = 0;
-    int j = 0;
-    char newNumber[1000];
+char * parseNumbers(char * number, int flagDouble) {
+    int i, j = 0; //k = 0;
+    char newNumber[5000];
+//    char aux[50];
 
-    for(i = 0; i < strlen(number); i++) {
-        if(number[i] != '_') {
-            newNumber[j] = number[i];
+    if (!flagDouble) {
+        for (i = 0; i < strlen(number); i++) {
+            if (number[i] != '_') {
+                newNumber[j] = number[i];
+                j++;
+            }
+        }
+        newNumber[j] = '\0';
+    } else {
+        for (i = 0; i < strlen(number); i++) {
+            if (number[i] != '_') {
+                newNumber[j] = number[i];
+                j++;
+            } else {
+                break;
+            }
+        }
+        if (number[i] == '.')
+            i++;
+        for (; i < strlen(number); i++) {
+            if (number[i] != '_') {
+                newNumber[j] = number[i];
+                j++;
+            } else {
+                break;
+            }
+        }
+/*
+        else if (number[i] == 'e' || number[i] == 'E') {
+            i++;
+            if (number[i] == '+' || (number[i] >= '1' && number[i] <= '0')) {
+                k = 0;
+                if (number[i] == '+') {
+                    i++;
+                    for (; i < strlen(number); i++) {
+                        if(number[i] != '_') {
+                            aux[k] = number[i];
+                            k++;
+                        }
+                    }
+                    aux[k] = '\0';
+                }
+            }
+            break;
+        }
+        for (i = 0; i < k; i++) {
+            newNumber[j] = 0;
             j++;
         }
+        newNumber[j] = '\0';
+*/
+        //1.7976931348623157E308
+        //4.9E-324
     }
-
-    newNumber[j] = '\0';
 
     return strdup(newNumber);
 }
