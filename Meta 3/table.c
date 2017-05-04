@@ -537,11 +537,11 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
                 node -> annotation = strdup("int");
             } else {
                 node -> annotation = strdup("undef");
-                printf("Line %d, col %d: Operator length cannot be applied to type %s\n", node -> line, node -> column, child1 -> annotation);
+                printf("Line %d, col %d: Operator .length cannot be applied to type %s\n", node -> line, node -> column, child1 -> annotation);
             }
         } else {
             node -> annotation = strdup("undef");
-            printf("Line %d, col %d: Operator length cannot be applied to type %s\n", node -> line, node -> column, child1 -> annotation);
+            printf("Line %d, col %d: Operator .length cannot be applied to type %s\n", node -> line, node -> column, child1 -> annotation);
         }
     } else if(strcmp(node -> type, "Return") == 0) {
         child1 = node -> child;
