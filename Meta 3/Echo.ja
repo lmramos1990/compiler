@@ -1,24 +1,16 @@
 class gcd {
-    public static int hello() {
-        int a;
-        double b;
-        boolean c;
+    public static double d;
 
-        if(1 == true) {
-            a = b;
-            a = true;
+    public static void hello(String[] args) {
+
+
+        if(cenas()) {
+
+            d = true;
         }
 
     }
 
-    public static void main() {
-        return coisab();
-    }
-
-    public static int coisab() {
-        hello();
-        return 1;
-    }
-
+    public static void cenas() {}
 
 }
