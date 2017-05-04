@@ -548,39 +548,51 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
         node -> annotation = strdup("int");
     } else if(strcmp(node -> type, "Return") == 0) {
         child1 = node -> child;
-        int endFlag = 0;
-
-        ASTSemanticAnnotations(child1, symbolTable, 1);
 
         if(strcmp(AnnotationscurrentMethodNode -> type, "void") == 0) {
             if(child1 != NULL) {
                 printf("Line %d, col %d: Incompatible type %s in return statement\n", child1 -> line, child1 -> column, child1 -> annotation);
             }
         } else {
+            ASTSemanticAnnotations(child1, symbolTable, 1);
+
             if(child1 != NULL) {
-                if(strcmp(AnnotationscurrentMethodNode -> type, child1 -> annotation) != 0) {
-                    if(strcmp(child1 -> type, "Call") == 0) {
-                        printf("Line %d, col %d: Incompatible type %s in return statement\n", child1 -> line, child1 -> column, child1 -> annotation);
-                        endFlag = 1;
-                    }
-
-                    if(!endFlag && strcmp(AnnotationscurrentMethodNode -> type, "int") == 0 && strcmp(child1 -> annotation, "double") == 0) {
-                        printf("Line %d, col %d: Incompatible type %s in return statement\n", child1 -> line, child1 -> column, child1 -> annotation);
-                        endFlag = 1;
-                    }
-
-                    if(!endFlag) printf("Line %d, col %d: Incompatible type %s in return statement\n", child1 -> line, child1 -> column, child1 -> annotation);
-                } else {
-                    if(strcmp(child1 -> type, "Call") == 0) {
+                if (strcmp(child1 -> type, "Call") == 0) {
+                    printf("Line %d, col %d: Incompatible type %s in return statement\n", child1 -> line, child1 -> column, child1 -> annotation);
+                } else if (strcmp(AnnotationscurrentMethodNode -> type, child1 -> annotation) != 0) {
+                    if(!(strcmp(AnnotationscurrentMethodNode -> type, "double") == 0 && strcmp(child1 -> annotation, "int") == 0)) {
                         printf("Line %d, col %d: Incompatible type %s in return statement\n", child1 -> line, child1 -> column, child1 -> annotation);
                     }
                 }
             } else {
-                if(strcmp(AnnotationscurrentMethodNode -> type, "void") != 0) {
-                    printf("Line %d, col %d: Incompatible type void in return statement\n", node -> line, node -> column);
-                }
+                printf("Line %d, col %d: Incompatible type void in return statement\n", node -> line, node -> column);
             }
         }
+
+        /*
+
+        child1 = node -> child;
+
+        if(child1 == NULL) {
+            if(strcmp(AnnotationscurrentMethodNode -> type, "void") != 0) {
+                printf("Line %d, col %d: Incompatible type void in return statement\n", node -> line, node -> column);
+            }
+        } else {
+            ASTSemanticAnnotations(child1, symbolTable, 1);
+
+            if(strcmp(child1 -> annotation, "undef") != 0) {
+                if(strcmp(AnnotationscurrentMethodNode -> type, child1 -> annotation) != 0) {
+                    if(strcmp(AnnotationscurrentMethodNode -> type, "int") == 0 && strcmp(child1 -> annotation, "double") == 0) {
+                        printf("Line %d, col %d: Incompatible type %s in return statement\n", child1 -> line, child1 -> column, child1 -> annotation);
+                    } else if(strcmp(AnnotationscurrentMethodNode -> type, "void") == 0 && child1 -> annotation != NULL) {
+                        printf("Line %d, col %d: Incompatible type %s in return statement\n", child1 -> line, child1 -> column, child1 -> annotation);
+                    }
+                }
+            } else {
+                printf("Line %d, col %d: Incompatible type undef in return statement\n", child1 -> line, child1 -> column);
+            }
+        }
+        */
     } else if(strcmp(node -> type, "MethodHeader") == 0) {
         if(AnnotationscurrentMethodNode == NULL)
             auxSymbolTable = symbolTable -> child;

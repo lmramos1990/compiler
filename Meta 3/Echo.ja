@@ -1,4 +1,5 @@
 class gcd {
+public static int b;
     public static int main() {
         return 1;
         return 1.0;
@@ -6,12 +7,16 @@ class gcd {
         return integer();
         return floatingNumber();
         return booleanCharacters();
+        int a;
+        return a;
+        return;
+        return b;
     }
 
     public static int integer() {
         return 1;
     }
-
+public static int c;
     public static double floatingNumber() {
         return 1.0;
     }
