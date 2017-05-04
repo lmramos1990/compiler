@@ -1,4 +1,5 @@
 #include "structs.h"
+#include "float.h"
 
 SymbolTableNode * AnnotationscurrentMethodNode = NULL;
 
@@ -288,7 +289,7 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
             return;
         } else if(strcmp(node -> type, "DecLit") == 0) {
 
-            char * number = parseNumbers(node -> content, 0);
+            char * number = parseNumbers(node -> content);
 
             if(strlen(number) > 10 || atol(number) >= 2147483648) {
                 printf("Line %d, col %d: Number %s out of bounds\n", node -> line, node -> column, node -> content);
@@ -298,27 +299,21 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
             return;
         } else if(strcmp(node -> type, "RealLit") == 0) {
 
-            char * decimal = strdup(node -> content);
-            char * integer = NULL;
-            integer = strsep(&decimal, ".");
+            char * number = parseNumbers(node -> content);
+            double left;
 
-            char * number = parseNumbers(integer, 1);
-/*
-            if (strlen(number) >=17) {
-                char aux = number[17];
-                number[17] = '\0';
-            }
-*/
-            if(strlen(number) > 309 || atoll(number) > 17976931348623157) {
+            left = strtod(number, NULL);
+
+//            printf("%s\nleft: %f\n", number, left);
+
+            if(left > DBL_MAX) {
                 printf("Line %d, col %d: Number %s out of bounds\n", node -> line, node -> column, node -> content);
             }
 
             free(number);
-            free(integer);
 
             node -> annotation = strdup("double");
-            return;
-        } else if(strcmp(node -> type, "BoolLit") == 0) {
+            return;        } else if(strcmp(node -> type, "BoolLit") == 0) {
             node -> annotation = strdup("boolean");
             return;
         } else if(strcmp(node -> type, "StrLit") == 0) {
@@ -738,12 +733,10 @@ int isSameMethod(SymbolTableNode * current, SymbolTableNode * method) {
     }
 }
 
-char * parseNumbers(char * number, int flagDouble) {
-    int i, j = 0; //k = 0;
+char * parseNumbers(char * number) {
+    int i, j = 0;
     char newNumber[5000];
-//    char aux[50];
 
-    if (!flagDouble) {
         for (i = 0; i < strlen(number); i++) {
             if (number[i] != '_') {
                 newNumber[j] = number[i];
@@ -751,52 +744,6 @@ char * parseNumbers(char * number, int flagDouble) {
             }
         }
         newNumber[j] = '\0';
-    } else {
-        for (i = 0; i < strlen(number); i++) {
-            if (number[i] != '_') {
-                newNumber[j] = number[i];
-                j++;
-            } else {
-                break;
-            }
-        }
-        if (number[i] == '.')
-            i++;
-        for (; i < strlen(number); i++) {
-            if (number[i] != '_') {
-                newNumber[j] = number[i];
-                j++;
-            } else {
-                break;
-            }
-        }
-/*
-        else if (number[i] == 'e' || number[i] == 'E') {
-            i++;
-            if (number[i] == '+' || (number[i] >= '1' && number[i] <= '0')) {
-                k = 0;
-                if (number[i] == '+') {
-                    i++;
-                    for (; i < strlen(number); i++) {
-                        if(number[i] != '_') {
-                            aux[k] = number[i];
-                            k++;
-                        }
-                    }
-                    aux[k] = '\0';
-                }
-            }
-            break;
-        }
-        for (i = 0; i < k; i++) {
-            newNumber[j] = 0;
-            j++;
-        }
-        newNumber[j] = '\0';
-*/
-        //1.7976931348623157E308
-        //4.9E-324
-    }
 
     return strdup(newNumber);
 }
