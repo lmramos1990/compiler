@@ -2,14 +2,11 @@ class gcd {
     public static int hello() {
         int a;
         double b;
-
         boolean c;
-        c = 1;
 
-        double a;
-
-        if(coisab()) {
-
+        if(1 == true) {
+            a = b;
+            a = true;
         }
 
     }

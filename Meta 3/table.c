@@ -341,11 +341,11 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
                 node -> annotation = strdup("double");
             } else {
                 node -> annotation = strdup("undef");
-                printf("Line %d, col %d: Operator = cannot be applied to types %s, %s\n", node -> child -> line, node -> child -> column, child1 -> annotation, child2 -> annotation);
+                printf("Line %d, col %d: Operator = cannot be applied to types %s, %s\n", node -> line, node -> column, child1 -> annotation, child2 -> annotation);
             }
         } else {
             node -> annotation = strdup("undef");
-            printf("Line %d, col %d: Operator = cannot be applied to types %s, %s\n", node -> child -> line, node -> child -> column, child1 -> annotation, child2 -> annotation);
+            printf("Line %d, col %d: Operator = cannot be applied to types %s, %s\n", node -> line, node -> column, child1 -> annotation, child2 -> annotation);
         }
     } else if(strcmp(node -> type, "Call") == 0) {
         child1 = node -> child;
@@ -571,7 +571,8 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
         if(strcmp(child1 -> annotation, "boolean") != 0) {
             printf("Line %d, col %d: Incompatible type %s in if statement\n", child1 -> line, child1 -> column, child1 -> annotation);
         }
-        ASTSemanticAnnotations(child1 -> next, symbolTable, 0);
+        //if ((child1 -> next -> child != NULL && child1 -> next -> child -> annotation == NULL) || (child1 -> next -> next -> child != NULL && child1 -> next -> next -> child -> annotation == NULL))
+            ASTSemanticAnnotations(child1 -> next, symbolTable, 0);
     } else if(strcmp(node -> type, "While") == 0) {
         child1 = node -> child;
 
@@ -579,7 +580,8 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
         if(strcmp(child1 -> annotation, "boolean") != 0) {
             printf("Line %d, col %d: Incompatible type %s in while statement\n", child1 -> line, child1 -> column, child1 -> annotation);
         }
-        ASTSemanticAnnotations(node -> child -> next, symbolTable, 0);
+        //if (child1 -> next -> child != NULL && child1 -> next -> child -> annotation == NULL)
+            ASTSemanticAnnotations(node -> child -> next, symbolTable, 0);
     } else if(strcmp(node -> type, "DoWhile") == 0) {
         child1 = node -> child -> next;
 
