@@ -435,7 +435,7 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
             operator = strdup("!=");
         }
 
-        if(strcmp(child1 -> annotation, "undef") != 0 && strcmp(child2 -> annotation, "undef") != 0) {
+        if(strcmp(child1 -> annotation, "undef") != 0 && strcmp(child2 -> annotation, "undef") != 0 && strcmp(child1 -> annotation, "String[]") != 0 && strcmp(child2 -> annotation, "String[]") != 0) {
             if(strcmp(child1 -> annotation, child2 -> annotation) == 0) {
                 node -> annotation = strdup("boolean");
             } else if((strcmp(child1 -> annotation, "int") == 0 || strcmp(child1 -> annotation, "double") == 0) && (strcmp(child2 -> annotation, "int") == 0 || strcmp(child2 -> annotation, "double") == 0)) {
@@ -470,11 +470,13 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
             operator = '%';
         }
 
-        if(strcmp(child1 -> annotation, "undef") != 0 && strcmp(child2 -> annotation, "undef") != 0) {
+        if(strcmp(child1 -> annotation, "undef") != 0 && strcmp(child2 -> annotation, "undef") != 0 && strcmp(child1 -> annotation, "String[]") != 0 && strcmp(child2 -> annotation, "String[]") != 0) {
             if(strcmp(child1 -> annotation, child2 -> annotation) == 0) {
                 node -> annotation = strdup(child1 -> annotation);
             } else if((strcmp(child1 -> annotation, "double") == 0 && strcmp(child2 -> annotation, "int") == 0) || (strcmp(child1 -> annotation, "int") == 0 && strcmp(child2 -> annotation, "double") == 0)) {
                 node -> annotation = strdup("double");
+            } else if() {
+
             } else {
                 node -> annotation = strdup("undef");
                 printf("Line %d, col %d: Operator %c cannot be applied to types %s, %s\n", node -> line, node -> column, operator, child1 -> annotation, child2 -> annotation);
