@@ -3,12 +3,9 @@ class gcd {
 
     public static void hello(String[] args) {
 
-
-        if(cenas()) {
-
-            d = true;
+        if(args && cenas()) {
+            System.out.println(args);
         }
-
     }
 
     public static void cenas() {}
