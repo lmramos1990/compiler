@@ -1,0 +1,2 @@
+String[] = true;
+assign->annotation = String[] ? OR undef?
