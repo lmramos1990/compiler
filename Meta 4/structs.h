@@ -2,6 +2,17 @@
 #include <stdio.h>
 #include <string.h>
 
+typedef struct symbol_table {
+    char * type;
+    char * name;
+    char * params;
+    char * flag;
+    char * llvmCode;
+    int flagMethod;
+    struct symbol_table * next;
+    struct symbol_table * child;
+} SymbolTableNode;
+
 typedef struct tree_node {
     char * type;
     char * content;
@@ -11,17 +22,8 @@ typedef struct tree_node {
     struct tree_node * next;
     struct tree_node * child;
     char * annotation;
+    SymbolTableNode * stnode;
 } ASTNode;
-
-typedef struct symbol_table {
-    char * type;
-    char * name;
-    char * params;
-    char * flag;
-    int flagMethod;
-    struct symbol_table * next;
-    struct symbol_table * child;
-} SymbolTableNode;
 
 typedef struct payload_node {
     char * value;
@@ -29,9 +31,9 @@ typedef struct payload_node {
     int column;
 } Payload;
 
-Payload* createPayloadNode(char *value, int line, int column);
+Payload * createPayloadNode(char *value, int line, int column);
 
-ASTNode* createASTNode(char * typeNode, Payload * content, ASTNode * relatedNode, char relation);
+ASTNode * createASTNode(char * typeNode, Payload * content, ASTNode * relatedNode, char relation);
 void printTrees(ASTNode * node, int depth, int flagSymbomTable);
 void destroyAST(ASTNode * node);
 
@@ -44,3 +46,6 @@ char * checkVariableExistance(ASTNode * astnode, SymbolTableNode * stnode, Symbo
 char * getMethodType(ASTNode * astnode, SymbolTableNode * stnode);
 int isSameMethod(SymbolTableNode * current, SymbolTableNode * method);
 char * parseNumbers(char * number, int *zero);
+
+char * removeUnderscores(char * number);
+void generateIntermidiateRepresentation(ASTNode * node, SymbolTableNode * symbolTable, int flagVariable);

@@ -17,8 +17,8 @@ ASTNode * createASTNode(char * typeNode, Payload * content, ASTNode * relatedNod
         free(content);
     } else {
         newNode -> content = NULL;
-        newNode->line = -1;
-        newNode->column = -1;
+        newNode -> line = -1;
+        newNode -> column = -1;
     }
 
     switch(relation) {
@@ -36,7 +36,8 @@ ASTNode * createASTNode(char * typeNode, Payload * content, ASTNode * relatedNod
             break;
     }
 
-    newNode->annotation = NULL;
+    newNode -> annotation = NULL;
+    newNode -> stnode = NULL;
 
     return newNode;
 }
@@ -76,19 +77,19 @@ void destroyAST(ASTNode * node) {
         return;
     }
 
-    if (node->next != NULL) {
+    if (node -> next != NULL) {
         destroyAST(node -> next);
     }
-    if (node->child != NULL) {
+    if (node -> child != NULL) {
         destroyAST(node -> child);
     }
 
-    free(node->type);
-    if (node->content != NULL) {
-        free(node->content);
+    free(node -> type);
+    if (node -> content != NULL) {
+        free(node -> content);
     }
-    if (node->annotation != NULL) {
-        free(node->annotation);
+    if (node -> annotation != NULL) {
+        free(node -> annotation);
     }
 
     free(node);

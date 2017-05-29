@@ -5,9 +5,9 @@
     int yylex(void);
     void yyerror(const char *s);
 
-    extern ASTNode *tree;
-    ASTNode *auxNode;
-    extern char *auxType;
+    extern ASTNode * tree;
+    ASTNode * auxNode;
+    extern char * auxType;
     extern int flagError;
     int flagAux = 0;
 %}
