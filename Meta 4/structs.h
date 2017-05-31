@@ -52,3 +52,5 @@ char * removeUnderscores(char * number);
 void doStrings(ASTNode *node);
 void declareVariables(ASTNode *node);
 char * parseParameters(char * params);
+char * recreateRealLit(char * number);
+int stringLength(char * string);

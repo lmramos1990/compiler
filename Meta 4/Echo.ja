@@ -12,11 +12,20 @@ class Echo {
         int b;
         b = 2_0_0;
 
+        c = .213918723980 * -1.0;
+
+        c = .1E4;
+
+        boolean bol;
+        bol = false;
+
+        System.out.println(true);
+        System.out.println(bol);
+
 
 
         c = -1;
-
-        System.out.println("ola");
+        
         System.out.println(c);
         System.out.println(10);
 
