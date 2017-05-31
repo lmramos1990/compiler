@@ -89,24 +89,24 @@ void generateIntermidiateRepresentation(ASTNode * node, SymbolTableNode * symbol
         if(child1 -> stnode -> flagMethod == 2) {
             sprintf(variableid, "@%s%c", child1 -> content, '\0');
         } else {
-            sprintf(variableid, "%c%s%c", '%', child1 -> content, '\0');
+            sprintf(variableid, "%c%s%c.addr", '%', child1 -> content, '\0');
         }
         child1 -> llvmCode = strdup(variableid);
 
         if(strcmp(child1 -> annotation, "int") == 0) {
-            printf(" store i32 %s, i32* %s.addr\n", child2 -> llvmCode, child1 -> llvmCode);
+            printf(" store i32 %s, i32* %s\n", child2 -> llvmCode, child1 -> llvmCode);
         } else if(strcmp(child1 -> annotation, "double") == 0) {
 
             if(strcmp(child2 -> type, "DecLit") == 0) {
-                printf(" store double %s.0, double* %s.addr\n", child2 -> llvmCode, child1 -> llvmCode);
+                printf(" store double %s.0, double* %s\n", child2 -> llvmCode, child1 -> llvmCode);
             } else if(strcmp(child2 -> annotation, "int") == 0) {
                 printf(" %c%d = sitofp i32 %s to double\n", '%', variableMemoryCode, child2 -> llvmCode);
-                printf(" store double %c%d, double* %s.addr\n", '%', variableMemoryCode++, child1 -> llvmCode);
+                printf(" store double %c%d, double* %s\n", '%', variableMemoryCode++, child1 -> llvmCode);
             } else {
-                printf(" store double %s, double* %s.addr\n", child2 -> llvmCode, child1 -> llvmCode);
+                printf(" store double %s, double* %s\n", child2 -> llvmCode, child1 -> llvmCode);
             }
         } else if(strcmp(child1 -> annotation, "boolean") == 0) {
-            printf(" store i1 %s, i1* %s.addr\n", child2 -> llvmCode, child1 -> llvmCode);
+            printf(" store i1 %s, i1* %s\n", child2 -> llvmCode, child1 -> llvmCode);
         }
 
     } else if(strcmp(node -> type, "Call") == 0) {
@@ -510,7 +510,7 @@ void generateIntermidiateRepresentation(ASTNode * node, SymbolTableNode * symbol
         while(aux != NULL && aux -> flag != NULL && strcmp(aux -> flag, "param") == 0) {
             if(strcmp(aux -> type, "boolean") == 0) {
 
-                printf(" %c%s = alloca i1\n", '%', aux -> name);
+                printf(" %c%s.addr = alloca i1\n", '%', aux -> name);
                 printf(" store i1 %c%s, i1* %c%s.addr\n", '%', aux -> name, '%', aux -> name);
 
             } else if(strcmp(aux -> type, "int") == 0) {

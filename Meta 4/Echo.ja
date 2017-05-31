@@ -1,15 +1,21 @@
 class Echo {
 
     public static double c;
+    public static boolean counter;
 
-    public static int main(int a) {
-        a = 1;
+    public static int main(boolean hello) {
 
+        hello = false;
+
+        c= 2;
+
+        counter = true;
+        counter = coisa();
         boolean bol;
         bol = true;
+        bol = false;
 
         int b;
-        b = a + 1;
 
         return 1;
     }
@@ -24,5 +30,9 @@ class Echo {
         a = a-b;
         b = b-a;
         System.out.println(a);
+    }
+
+    public static boolean coisa() {
+        return true;
     }
 }
