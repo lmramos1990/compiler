@@ -1,26 +1,11 @@
 #include "structs.h"
 
 SymbolTableNode * annotationsCurrentMethodNode = NULL;
-int variableMemoryCode = 0;
-
-char * removeUnderscores(char * number) {
-    int i, j = 0;
-    char newnumber[5000];
-    for(i = 0; i < strlen(number); i++) {
-        if(number[i] != '_') {
-            newnumber[j] = number[i];
-            j++;
-        }
-    }
-
-    newnumber[j] = '\0';
-
-    return strdup(newnumber);
-}
+int variableMemoryCode = 1;
+int stringCounter = 1;
 
 void generateIntermidiateRepresentation(ASTNode * node, SymbolTableNode * symbolTable, int flagVariable) {
     ASTNode * child1, * child2;
-    char * varType;
 
     if(node == NULL) {
         return;
@@ -33,22 +18,61 @@ void generateIntermidiateRepresentation(ASTNode * node, SymbolTableNode * symbol
 
     if(flagVariable) {
         if(strcmp(node -> type, "Id") == 0) {
-            varType = checkVariableExistance(node, symbolTable, annotationsCurrentMethodNode, 1, 1);
+            char variableid[1024];
+
+            if(node -> stnode -> flagMethod == 2) {
+                sprintf(variableid, "%c%d%c", '%', variableMemoryCode, '\0');
+
+                if(strcmp(node -> annotation, "int") == 0) {
+                    printf(" %c%d = load i32, i32* @%s\n", '%', variableMemoryCode, node -> content);
+                } else if(strcmp(node -> annotation, "double") == 0) {
+                    printf(" %c%d = load double, double* @%s\n", '%', variableMemoryCode, node -> content);
+                } else if(strcmp(node -> annotation, "boolean") == 0) {
+                    printf(" %c%d = load i1, i1* @%s\n", '%', variableMemoryCode, node -> content);
+                }
+
+            } else {
+                // ver o tipo da variavel e double - usar ponteiro para symbol table
+                sprintf(variableid, "%c%d%c", '%', variableMemoryCode, '\0');
+
+                printf("t %s c %s a %s l %s\n", node -> type, node -> content, node -> annotation, node -> llvmCode);
+
+                if(strcmp(node -> annotation, "int") == 0) {
+                    printf(" %c%d = load i32, i32* %c%s\n", '%', variableMemoryCode, '%', node -> content);
+                } else if(strcmp(node -> annotation, "double") == 0) {
+                    printf(" %c%d = load double, double* %c%s\n", '%', variableMemoryCode, '%', node -> content);
+                } else if(strcmp(node -> annotation, "boolean") == 0) {
+                    printf(" %c%d = load i1, i1* %c%s\n", '%', variableMemoryCode, '%', node -> content);
+                }
+            }
+
+            variableMemoryCode++;
+            node -> llvmCode = strdup(variableid);
+
             return;
         } else if(strcmp(node -> type, "DecLit") == 0) {
             char * number = removeUnderscores(node -> content);
+
+            node -> llvmCode = strdup(number);
+
             free(number);
             return;
         } else if(strcmp(node -> type, "RealLit") == 0) {
             char * number = removeUnderscores(node -> content);
+
+            node -> llvmCode = strdup(number);
+
             free(number);
 
             return;
         } else if(strcmp(node -> type, "BoolLit") == 0) {
-            printf("boollit\n");
-            return;
-        } else if(strcmp(node -> type, "StrLit") == 0) {
-            printf("strlit\n");
+
+            if(strcmp(node -> content, "true") == 0) {
+                node -> llvmCode = strdup("1");
+            } else {
+                node -> llvmCode = strdup("0");
+            }
+
             return;
         }
     }
@@ -57,29 +81,29 @@ void generateIntermidiateRepresentation(ASTNode * node, SymbolTableNode * symbol
         child1 = node -> child;
         child2 = node -> child -> next;
 
-        generateIntermidiateRepresentation(child1, symbolTable, 1);
         generateIntermidiateRepresentation(child2, symbolTable, 1);
 
-        // store i32 1, i32* %a
-        // store i32 2, i32* %b
-        // %0 = load i32, i32* %a
-        // %1 = load i32, i32* %b
+        char variableid[1024];
 
-        // printf("CHILD1 %s\n", child1 -> content);
-        // printf("CHILD2 %s\n", child2 -> content);
+        if(child1 -> stnode -> flagMethod == 2) {
+            sprintf(variableid, "@%s%c", child1 -> content, '\0');
+        } else {
+            sprintf(variableid, "%c%s%c", '%', child1 -> content, '\0');
+        }
+
+        child1 -> llvmCode = strdup(variableid);
 
         if(strcmp(child1 -> annotation, "int") == 0) {
-            // printf(" store i32 %s, i32* %c%s\n", child2 -> llvm, '%', child1 -> llvm);
-            // printf(" %c%d = load i32, i32* %c%s\n", '%', variableMemoryCode, '%', child1 -> llvm);
-            // variableMemoryCode++;
+            printf(" store i32 %s, i32* %s\n", child2 -> llvmCode, child1 -> llvmCode);
         } else if(strcmp(child1 -> annotation, "double") == 0) {
-            // printf(" store double %s, double* %c%s\n", child2 -> llvm, '%', child1 -> content);
-            // printf(" %c%d = load i32, i32* %c%s\n", '%', variableMemoryCode, '%', child1 -> content);
-            // variableMemoryCode++;
+
+            if(strcmp(child2 -> type, "DecLit") == 0) {
+                printf(" store double %s.0, double* %s\n", child2 -> llvmCode, child1 -> llvmCode);
+            } else {
+                printf(" store double %s, double* %s\n", child2 -> llvmCode, child1 -> llvmCode);
+            }
         } else if(strcmp(child1 -> annotation, "boolean") == 0) {
-            // printf(" store i1 %s, i1* %c%s\n", child2 -> llvm, '%', child1 -> content);
-            // printf(" %c%d = load i32, i32* %c%s\n", '%', variableMemoryCode, '%', child1 -> content);
-            // variableMemoryCode++;
+            printf(" store i1 %s, i1* %s\n", child2 -> llvmCode, child1 -> llvmCode);
         }
 
     } else if(strcmp(node -> type, "Call") == 0) {
@@ -198,13 +222,10 @@ void generateIntermidiateRepresentation(ASTNode * node, SymbolTableNode * symbol
         child1 = node -> child;
         child2 = node -> child -> next;
 
-        // printf("TYPE: %s VALUE: %s\n", node -> type, node -> content);
-
         generateIntermidiateRepresentation(child1, symbolTable, 1);
         generateIntermidiateRepresentation(child2, symbolTable, 1);
 
         char * operator = NULL;
-        // char llvm[1024];
 
         if(strcmp(node -> type, "Add") == 0) {
             operator = strdup("add");
@@ -218,61 +239,54 @@ void generateIntermidiateRepresentation(ASTNode * node, SymbolTableNode * symbol
             operator = strdup("mod");
         }
 
+        char variableid[1024];
+
         if(strcmp(child1 -> annotation, "int") == 0 && strcmp(child2 -> annotation, "int") == 0) {
-            // int = int
-            // printf("\t\thello world!\n");
-            //
-            // // %add = add i32 %0, %1
-            // // store i32 %add, i32* %c
-            //
-            // printf(" %c%d = %s %c%s %c%s\n", '%', variableMemoryCode, operator, '%', child1 -> llvm, '%', child2 -> llvm);
-            //
-            // sprintf(llvm, "%c%d", '%', variableMemoryCode);
-            // variableMemoryCode++;
-            // node -> llvm = strdup(llvm);
+            printf(" %c%d = %s i32 %s, %s\n", '%', variableMemoryCode, operator, child1 -> llvmCode, child2 -> llvmCode);
 
+            sprintf(variableid, "%c%d%c", '%', variableMemoryCode++, '\0');
+
+            node -> llvmCode = strdup(variableid);
         } else if(strcmp(child1 -> annotation, "double") == 0 && strcmp(child2 -> annotation, "double") == 0) {
-            // double = double
-            // printf("hello world!\n");
-            //
-            // sprintf(llvm, "%s double %c%s %c%s%c", operator, '%', child1 -> content, '%', child2 -> content, '\0');
-            // node -> llvm = strdup(llvm);
+            printf(" %c%d = %s double %s, %s\n", '%', variableMemoryCode++, operator, child1 -> llvmCode, child2 -> llvmCode);
 
+            sprintf(variableid, "%c%d%c", '%', variableMemoryCode++, '\0');
+
+            node -> llvmCode = strdup(variableid);
         } else if(strcmp(child1 -> annotation, "int") == 0 && strcmp(child2 -> annotation, "double") == 0) {
-            // int - double
-            // printf("hello world!\n");
-            //
-            // sprintf(llvm, "%s double %c%s %c%s%c", operator, '%', child1 -> content, '%', child2 -> content, '\0');
-            // node -> llvm = strdup(llvm);
+            printf(" %c%d = %s double %s, %s\n", '%', variableMemoryCode++, operator, child1 -> llvmCode, child2 -> llvmCode);
 
+            sprintf(variableid, "%c%d%c", '%', variableMemoryCode++, '\0');
+
+            node -> llvmCode = strdup(variableid);
         } else if(strcmp(child1 -> annotation, "double") == 0 && strcmp(child2 -> annotation, "int") == 0) {
-            // double = int
-            // printf("hello world!\n");
-            //
-            // sprintf(llvm, "%s double %c%s %c%s%c", operator, '%', child1 -> content, '%', child2 -> content, '\0');
-            // node -> llvm = strdup(llvm);
+            printf(" %c%d = %s double %s, %s\n", '%', variableMemoryCode++, operator, child1 -> llvmCode, child2 -> llvmCode);
+
+            sprintf(variableid, "%c%d%c", '%', variableMemoryCode++, '\0');
+
+            node -> llvmCode = strdup(variableid);
         }
 
         free(operator);
     } else if(strcmp(node -> type, "Minus") == 0 || strcmp(node -> type, "Plus") == 0) {
         child1 = node -> child;
 
-        // printf("TYPE: %s VALUE: %s\n", node -> type, node -> content);
-
         generateIntermidiateRepresentation(child1, symbolTable, 1);
 
-        char operator = '\0';
         if(strcmp(node -> type, "Plus") == 0) {
-            operator = '+';
+            node -> llvmCode = child1 -> llvmCode;
         } else if(strcmp(node -> type, "Minus") == 0) {
-            operator = '-';
-        }
+            char variableCode[4];
+            sprintf(variableCode, "%c%d", '%', variableMemoryCode++);
+            node -> llvmCode = strdup(variableCode);
 
-        if(strcmp(child1 -> annotation, "int") == 0 || strcmp(child1 -> annotation, "double") == 0) {
-            // node -> annotation = strdup(child1 -> annotation);
-        } else {
-            // node -> annotation = strdup("undef");
-            // printf("Line %d, col %d: Operator %c cannot be applied to type %s\n", node -> line, node -> column, operator, child1 -> annotation);
+            if(strcmp(child1 -> annotation, "int") == 0) {
+                printf(" %s = mul i32 -1, ", node -> llvmCode);
+            } else if(strcmp(child1 -> annotation, "double") == 0) {
+                printf(" %s = fmul double -1.0, ", node -> llvmCode);
+            }
+
+            printf("%s\n", child1 -> llvmCode);
         }
     } else if(strcmp(node -> type, "Not") == 0) {
         child1 = node -> child;
@@ -289,21 +303,18 @@ void generateIntermidiateRepresentation(ASTNode * node, SymbolTableNode * symbol
     } else if(strcmp(node -> type, "Print") == 0) {
         child1 = node -> child;
 
-        // printf("TYPE: %s VALUE: %s\n", node -> type, node -> content);
-
         generateIntermidiateRepresentation(child1, symbolTable, 1);
 
-        node -> line = child1 -> line;
-        node -> column = child1 -> column;
+        printf(" %c%d = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ", '%', variableMemoryCode++);
 
         if(strcmp(child1 -> annotation, "int") == 0) {
-            ;
+            printf("([4 x i8], [4 x i8]* @str.int, i32 0, i32 0), i32 %s)\n", child1 -> llvmCode);
         } else if(strcmp(child1 -> annotation, "double") == 0) {
-            ;
+            printf("([7 x i8], [7 x i8]* @str.double, i32 0, i32 0), double %s)\n", child1 -> llvmCode);
         } else if(strcmp(child1 -> annotation, "boolean") == 0) {
             ;
         } else if(strcmp(child1 -> annotation, "String") == 0) {
-            ;
+            printf("([4 x i8], [4 x i8]* @str.str, i32 0, i32 0), [%ld x i8]* %s)\n", strlen(child1 -> content), child1 -> llvmCode);
         }
 
     } else if(strcmp(node -> type, "Length") == 0) {
@@ -324,11 +335,11 @@ void generateIntermidiateRepresentation(ASTNode * node, SymbolTableNode * symbol
         generateIntermidiateRepresentation(child1, symbolTable, 1);
 
         if(strcmp(child1 -> annotation, "int") == 0) {
-            // printf(" ret i32 %c%s\n", '%', child1 -> llvm);
+            printf(" ret i32 %s\n", child1 -> llvmCode);
         } else if(strcmp(child1 -> annotation, "double") == 0) {
-            // printf(" ret double %c%s\n", '%', child1 -> llvm);
+            printf(" ret double %s\n", child1 -> llvmCode);
         } else if(strcmp(child1 -> annotation, "boolean") == 0) {
-            // printf(" ret i1 %c%s\n", '%', child1 -> llvm);
+            printf(" ret i1 %s\n", child1 -> llvmCode);
         }
 
     } else if(strcmp(node -> type, "MethodDecl") == 0) {
@@ -341,21 +352,29 @@ void generateIntermidiateRepresentation(ASTNode * node, SymbolTableNode * symbol
         }
 
         while(auxSymbolTable != NULL) {
-            if(auxSymbolTable -> flagMethod) {
+            if(auxSymbolTable -> flagMethod == 1) {
                 annotationsCurrentMethodNode = auxSymbolTable;
                 break;
             }
             auxSymbolTable = auxSymbolTable -> next;
         }
 
-        if(strcmp(node -> stnode -> child -> type, "int") == 0) {
-            printf("define i32 @%s.%s", symbolTable -> name, node -> stnode -> name);
-        } else if(strcmp(node -> stnode -> child -> type, "double") == 0) {
-            printf("define double @%s.%s", symbolTable -> name, node -> stnode -> name);
-        } else if(strcmp(node -> stnode -> child -> type, "boolean") == 0) {
-            printf("define i1 @%s.%s", symbolTable -> name, node -> stnode -> name);
+        char * parameters = NULL;
+
+        if(strcmp(node -> stnode -> params, "(String[])") == 0) {
+            parameters = strdup("stringarray");
         } else {
-            printf("define void @%s.%s", symbolTable -> name, node -> stnode -> name);
+            parameters = parseParameters(node -> stnode -> params);
+        }
+
+        if(strcmp(node -> stnode -> child -> type, "int") == 0) {
+            printf("define i32 @%s.%s.%s", symbolTable -> name, node -> stnode -> name, parameters);
+        } else if(strcmp(node -> stnode -> child -> type, "double") == 0) {
+            printf("define double @%s.%s.%s", symbolTable -> name, node -> stnode -> name, parameters);
+        } else if(strcmp(node -> stnode -> child -> type, "boolean") == 0) {
+            printf("define i1 @%s.%s.%s", symbolTable -> name, node -> stnode -> name, parameters);
+        } else {
+            printf("define void @%s.%s.%s", symbolTable -> name, node -> stnode -> name, parameters);
         }
 
         SymbolTableNode * aux = node -> stnode -> child -> next;
@@ -379,7 +398,7 @@ void generateIntermidiateRepresentation(ASTNode * node, SymbolTableNode * symbol
                 } else if(strcmp(aux -> type, "double") == 0) {
                     printf("double %c%s", '%', aux -> name);
                 } else if(strcmp(aux -> type, "String[]") == 0) {
-                    printf("i8** %c%s", '%', aux -> name);
+                    printf("i32 %c%s.c, i8** %c%s", '%', aux -> name, '%', aux -> name);
                 }
 
                 first++;
@@ -422,19 +441,27 @@ void generateIntermidiateRepresentation(ASTNode * node, SymbolTableNode * symbol
         if(strcmp(child1 -> annotation, "boolean") != 0) {
             // printf("Line %d, col %d: Incompatible type %s in do statement\n", child1 -> line, child1 -> column, child1 -> annotation);
         }
-
     } else if(strcmp(node -> type, "VarDecl") == 0) {
 
         if(strcmp(node -> child -> type, "Int") == 0) {
-
+            printf(" %c%s = alloca i32\n", '%', node -> child -> next -> content);
         } else if(strcmp(node -> child -> type, "Double") == 0) {
-
+            printf(" %c%s = alloca double\n", '%', node -> child -> next -> content);
         } else if(strcmp(node -> child -> type, "Bool") == 0) {
-
+            printf(" %c%s = alloca i1\n", '%', node -> child -> next -> content);
         }
-
     } else if(strcmp(node -> type, "Program") == 0) {
-        printf("define i32 @main(i32 %cargc, i8** %cargv) {\n call void @%s.main(i32 %cargc, i8** %cargv)\n ret i32 0\n}\n", '%', '%', symbolTable -> name, '%', '%');
+        printf("define i32 @main(i32 %cargc, i8** %cargv) {\n call void @%s.main.stringarray(i32 %cargc, i8** %cargv)\n ret i32 0\n}\n", '%', '%', symbolTable -> name, '%', '%');
+
+        printf("\ndeclare i32 @printf(i8*, ...)\n");
+        doStrings(node);
+
+        printf("@str.str = private unnamed_addr constant [4 x i8] c\"%cs\\0A\\00\"\n", '%');
+        printf("@str.int = private unnamed_addr constant [4 x i8] c\"%cd\\0A\\00\"\n", '%');
+        printf("@str.double = private unnamed_addr constant [7 x i8] c\"%c.16E\\0A\\00\"\n", '%');
+        printf("@str.true = private unnamed_addr constant [6 x i8] c\"true\\0A\\00\"\n");
+        printf("@str.false = private unnamed_addr constant [7 x i8] c\"false\\0A\\00\"\n");
+        printf("\n");
 
         generateIntermidiateRepresentation(node -> child, symbolTable, 0);
 
@@ -447,13 +474,73 @@ void generateIntermidiateRepresentation(ASTNode * node, SymbolTableNode * symbol
 
         printf("}\n");
 
+    } else if(strcmp(node -> type, "FieldDecl") == 0) {
+        if(strcmp(node -> child -> type, "Int") == 0) {
+            printf("@%s = common global i32 0\n", node -> child -> next -> content);
+        } else if(strcmp(node -> child -> type, "Double") == 0) {
+            printf("@%s = common global double 0.0\n", node -> child -> next -> content);
+        } else if(strcmp(node -> child -> type, "Bool") == 0) {
+            printf("@%s = common global i1 0\n", node -> child -> next -> content);
+        }
     } else {
         generateIntermidiateRepresentation(node -> child, symbolTable, 0);
-
     }
 
     if(flagVariable != 2) {
         generateIntermidiateRepresentation(node -> next, symbolTable, 0);
 
     }
+}
+
+char * removeUnderscores(char * number) {
+    int i, j = 0;
+    char newnumber[5000];
+    for(i = 0; i < strlen(number); i++) {
+        if(number[i] != '_') {
+            newnumber[j] = number[i];
+            j++;
+        }
+    }
+
+    newnumber[j] = '\0';
+
+    return strdup(newnumber);
+}
+
+void doStrings(ASTNode *node) {
+    if(node == NULL) {
+        return;
+    }
+
+    if(strcmp(node -> type, "StrLit") == 0) {
+        char variableID[1024];
+        int i;
+
+        sprintf(variableID, "@str.%d", stringCounter++);
+
+        node -> llvmCode = strdup(variableID);
+        printf("%s = private unnamed_addr constant [%ld x i8] c\"", node -> llvmCode, strlen(node -> content));
+
+        for(i = 1; i < strlen(node -> content) - 1; i++) {
+            printf("%c", node -> content[i]);
+        }
+        printf("\\0A\\00\"\n");
+    }
+
+    doStrings(node -> child);
+    doStrings(node -> next);
+}
+
+char * parseParameters(char * params) {
+    char parameters[1024];
+    int i, j = 0;
+
+    for(i = 1; i < strlen(params) - 1; i++) {
+        if(params[i] != ',') {
+            parameters[j] = params[i];
+            j++;
+        }
+    }
+
+    return strdup(parameters);
 }

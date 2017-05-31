@@ -33,7 +33,6 @@ SymbolTableNode * createSymbolTableNode(char * type, char * name, char * params,
     }
 
     newNode -> flagMethod = flagMethod;
-    newNode -> llvmCode = NULL;
     newNode -> child = NULL;
     newNode -> next = NULL;
 
@@ -59,6 +58,9 @@ SymbolTableNode * semanticAnalysis(ASTNode * tree) {
                 } else {
                     table -> child = createSymbolTableNode(aux -> child -> type, aux -> child -> next -> content, NULL, NULL, 0);
                 }
+
+                // MARK VARIABLE AS GLOBAL
+                table -> child -> flagMethod = 2;
 
                 table = table -> child;
                 flagClassCreated = 0;
@@ -162,7 +164,7 @@ SymbolTableNode * semanticAnalysis(ASTNode * tree) {
             SymbolTableNode * stnaux = root -> child;
             int sameMethod = 0;
             while(stnaux != NULL) {
-                if(stnaux -> flagMethod && stnaux != auxTableMethodNode) {
+                if(stnaux -> flagMethod == 1 && stnaux != auxTableMethodNode) {
                     if(isSameMethod(stnaux, auxTableMethodNode)) {
                         flagError = 1;
                         printf("Line %d, col %d: Symbol %s%s already defined\n", currentMethod -> line, currentMethod -> column, currentMethod -> content, auxTableMethodNode -> params);
@@ -223,7 +225,7 @@ void printTable(SymbolTableNode *symbolTable) {
     aux = symbolTable -> child;
 
     while(aux != NULL) {
-        if(aux -> flagMethod) {
+        if(aux -> flagMethod == 1) {
             printf("\n===== Method %s%s Symbol Table =====\n", aux -> name, aux -> params);
 
             aux2 = aux -> child;
@@ -270,7 +272,7 @@ void destroySymbolTable(SymbolTableNode *symbolTable) {
 void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int flagVariable) {
     ASTNode * child1, * child2;
     SymbolTableNode * auxSymbolTable;
-    char * varType;
+    SymbolTableNode * variableExists;
 
     if(node == NULL) {
         return;
@@ -288,10 +290,11 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
     if(flagVariable) {
         if(strcmp(node -> type, "Id") == 0) {
 
-            varType = checkVariableExistance(node, symbolTable, AnnotationscurrentMethodNode, 1, 1);
+            variableExists = checkVariableExistance(node, symbolTable, AnnotationscurrentMethodNode, 1, 1);
 
-            if(varType != NULL) {
-                node -> annotation = strdup(varType);
+            if(variableExists != NULL) {
+                node -> annotation = strdup(variableExists -> type);
+                node -> stnode = variableExists;
             } else {
                 node -> annotation = strdup("undef");
                 flagError = 1;
@@ -624,7 +627,7 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
         }
 
         while(auxSymbolTable != NULL) {
-            if(auxSymbolTable -> flagMethod) {
+            if(auxSymbolTable -> flagMethod == 1) {
                 AnnotationscurrentMethodNode = auxSymbolTable;
                 break;
             }
@@ -691,7 +694,7 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
     }
 }
 
-char * checkVariableExistance(ASTNode * astnode, SymbolTableNode * stnode, SymbolTableNode * currentMethodNode, int flagLocal, int flagGlobal) {
+SymbolTableNode * checkVariableExistance(ASTNode * astnode, SymbolTableNode * stnode, SymbolTableNode * currentMethodNode, int flagLocal, int flagGlobal) {
     char *variableName;
     SymbolTableNode *aux;
 
@@ -712,7 +715,7 @@ char * checkVariableExistance(ASTNode * astnode, SymbolTableNode * stnode, Symbo
 
         while(aux != NULL) {
             if(strcmp(aux -> name, variableName) == 0) {
-                return aux -> type;
+                return aux;
             }
 
             aux = aux -> next;
@@ -723,8 +726,8 @@ char * checkVariableExistance(ASTNode * astnode, SymbolTableNode * stnode, Symbo
     if(flagGlobal) {
         aux = stnode -> child;
         while(aux != NULL) {
-            if(!(aux -> flagMethod) && strcmp(aux -> name, variableName) == 0) {
-                return aux -> type;
+            if(aux -> flagMethod != 1 && strcmp(aux -> name, variableName) == 0) {
+                return aux;
             }
 
             aux = aux -> next;
@@ -747,7 +750,7 @@ char * getMethodType(ASTNode * astnode, SymbolTableNode * stnode) {
     SymbolTableNode * lastFit = NULL;
 
     while(aux != NULL) {
-        if(aux -> flagMethod && strcmp(astnode -> content, aux -> name) == 0) {
+        if(aux -> flagMethod == 1 && strcmp(astnode -> content, aux -> name) == 0) {
             ASTNode * params = astnode -> next;
             aux2 = aux -> child -> next;
 

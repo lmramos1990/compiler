@@ -2,8 +2,9 @@ class Echo {
 
     public static double c;
 
-    public static int main1() {
+    public static int main(int as, int bs) {
 
+        c = 2;
 
         int a;
         a = 1;
@@ -11,13 +12,18 @@ class Echo {
         int b;
         b = 2;
 
-        int c;
 
-        c = a + b;
 
-        return c;
+        c = -c;
+
+        System.out.println("ola");
+
+        System.out.println(c);
+        System.out.println(10);
+
+        return 1;
     }
 
-    public static void main2(String[] args) {
+    public static void main(String[] args) {
     }
 }

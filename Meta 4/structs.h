@@ -7,7 +7,6 @@ typedef struct symbol_table {
     char * name;
     char * params;
     char * flag;
-    char * llvmCode;
     int flagMethod;
     struct symbol_table * next;
     struct symbol_table * child;
@@ -16,6 +15,7 @@ typedef struct symbol_table {
 typedef struct tree_node {
     char * type;
     char * content;
+    char * llvmCode;
     int flagSkip;
     int line;
     int column;
@@ -42,10 +42,12 @@ SymbolTableNode * semanticAnalysis(ASTNode * tree);
 void printTable(SymbolTableNode * symbolTable);
 void destroySymbolTable(SymbolTableNode * symbolTable);
 void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int flagVariable);
-char * checkVariableExistance(ASTNode * astnode, SymbolTableNode * stnode, SymbolTableNode * currentMethodNode, int flagLocal, int flagGlobal);
+SymbolTableNode * checkVariableExistance(ASTNode * astnode, SymbolTableNode * stnode, SymbolTableNode * currentMethodNode, int flagLocal, int flagGlobal);
 char * getMethodType(ASTNode * astnode, SymbolTableNode * stnode);
 int isSameMethod(SymbolTableNode * current, SymbolTableNode * method);
 char * parseNumbers(char * number, int *zero);
 
-char * removeUnderscores(char * number);
 void generateIntermidiateRepresentation(ASTNode * node, SymbolTableNode * symbolTable, int flagVariable);
+char * removeUnderscores(char * number);
+void doStrings(ASTNode *node);
+char * parseParameters(char * params);

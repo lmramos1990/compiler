@@ -37,6 +37,7 @@ ASTNode * createASTNode(char * typeNode, Payload * content, ASTNode * relatedNod
     }
 
     newNode -> annotation = NULL;
+    newNode -> llvmCode = NULL;
     newNode -> stnode = NULL;
 
     return newNode;
