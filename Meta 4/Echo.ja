@@ -2,7 +2,7 @@ class Echo {
 
     public static double c;
 
-    public static int main(int as, int bs) {
+    public static int main(int as, double bs) {
 
         c = 2;
 
@@ -10,14 +10,13 @@ class Echo {
         a = 1;
 
         int b;
-        b = 2;
+        b = 2_0_0;
 
 
 
-        c = -c;
+        c = -1;
 
         System.out.println("ola");
-
         System.out.println(c);
         System.out.println(10);
 
@@ -25,5 +24,8 @@ class Echo {
     }
 
     public static void main(String[] args) {
+        int aa;
+
+        main (aa, 2_0);
     }
 }

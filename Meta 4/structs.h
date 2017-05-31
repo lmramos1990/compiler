@@ -43,11 +43,12 @@ void printTable(SymbolTableNode * symbolTable);
 void destroySymbolTable(SymbolTableNode * symbolTable);
 void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int flagVariable);
 SymbolTableNode * checkVariableExistance(ASTNode * astnode, SymbolTableNode * stnode, SymbolTableNode * currentMethodNode, int flagLocal, int flagGlobal);
-char * getMethodType(ASTNode * astnode, SymbolTableNode * stnode);
+SymbolTableNode* getMethodType(ASTNode * astnode, SymbolTableNode * stnode);
 int isSameMethod(SymbolTableNode * current, SymbolTableNode * method);
 char * parseNumbers(char * number, int *zero);
 
 void generateIntermidiateRepresentation(ASTNode * node, SymbolTableNode * symbolTable, int flagVariable);
 char * removeUnderscores(char * number);
 void doStrings(ASTNode *node);
+void declareVariables(ASTNode *node);
 char * parseParameters(char * params);

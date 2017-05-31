@@ -376,7 +376,7 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
             params = params -> next;
         }
 
-        char * methodType = getMethodType(child1, symbolTable);
+        SymbolTableNode *methodType = getMethodType(child1, symbolTable);
 
         if(methodType == NULL) {
             flagError = 1;
@@ -389,7 +389,10 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
             }
             printf(")\n");
             node -> annotation = strdup("undef");
-        } else if(strcmp(methodType, "ambiguous") == 0) {
+        } else if(strcmp(methodType->type, "ambiguous") == 0) {
+            free(methodType->type);
+            free(methodType);
+
             flagError = 1;
             printf("Line %d, col %d: Reference to method %s(", node -> child -> line, node -> child -> column, node -> child -> content);
             params = child1 -> next;
@@ -402,7 +405,8 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
             child1 -> annotation = strdup("undef");
             node -> annotation = strdup("undef");
         } else {
-            node -> annotation = strdup(methodType);
+            node -> annotation = strdup(methodType->type);
+            child1->stnode = methodType;
         }
 
     } else if(strcmp(node -> type, "ParseArgs") == 0) {
@@ -737,7 +741,7 @@ SymbolTableNode * checkVariableExistance(ASTNode * astnode, SymbolTableNode * st
     return NULL;
 }
 
-char * getMethodType(ASTNode * astnode, SymbolTableNode * stnode) {
+SymbolTableNode* getMethodType(ASTNode * astnode, SymbolTableNode * stnode) {
     SymbolTableNode * aux, * aux2;
     int flagTaTudoBem, flagPerfectFit;
 
@@ -778,13 +782,15 @@ char * getMethodType(ASTNode * astnode, SymbolTableNode * stnode) {
             if(params == NULL && (aux2 == NULL || aux2 -> flag == NULL)) {
                 if(flagPerfectFit) {
                     astnode -> annotation = strdup(aux -> params);
-                    return aux -> type;
+                    return aux;
                 }
 
                 if(lastFit == NULL) {
                     lastFit = aux;
                 } else {
-                    return "ambiguous";
+                    SymbolTableNode *ambiguous = (SymbolTableNode*) malloc(sizeof(SymbolTableNode));
+                    ambiguous->type = strdup("ambiguous");
+                    return ambiguous;
                 }
             }
         }
@@ -793,7 +799,7 @@ char * getMethodType(ASTNode * astnode, SymbolTableNode * stnode) {
 
     if(lastFit != NULL) {
         astnode -> annotation = strdup(lastFit -> params);
-        return lastFit -> type;
+        return lastFit;
     } else {
         astnode -> annotation = strdup("undef");
         return NULL;

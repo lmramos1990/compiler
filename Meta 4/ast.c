@@ -92,6 +92,9 @@ void destroyAST(ASTNode * node) {
     if (node -> annotation != NULL) {
         free(node -> annotation);
     }
+    if (node->llvmCode != NULL) {
+        free(node->llvmCode);
+    }
 
     free(node);
 }
