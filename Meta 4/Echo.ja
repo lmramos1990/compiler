@@ -3,25 +3,113 @@ class Echo {
     public static double c;
     public static boolean counter;
 
-    public static int main(boolean hello) {
+    public static double main(int hello) {
         int a, b;
-        double c, d;
+        double d;
 
         a = 1;
-        b = 1;
+        b = 0;
         c = 1;
-        d = 1;
+        d = 2;
 
-        System.out.println(a >= c);
+        System.out.println("----");
+
+        do {
+            if (a == 5) {
+                System.out.println("----");
+                return 1;
+            }
+            System.out.println(a);
+            a = a + 1;
+        } while (a < 9);
+
+
+/*
+        boolean boo;
+        boo = true;
+
+        cenas();
+        System.out.println(boo || (false && false) || true);
+
+        if (boo || (false && false) || true) {
+            System.out.println("ola");
+        } else {
+            cenas();
+        }
+
+        return 2;
+
+        System.out.println(boo || (false && false) || true);
+
+        do {
+            if (c == 1) {
+                System.out.println(c);
+            }
+            a = a - 1;
+        } while (a >= 1);
+*/
+/*
+        do {
+            System.out.println(a);
+            a = a - 1;
+        } while (a >= 1);
+*/
+/*
+        while (a >= 1) {
+            System.out.println(a);
+            a = a - 1;
+        }
+*/
+/*
+        if (a == 1) {
+            System.out.println(a);
+        } else {
+            if (b == 1) {
+                System.out.println(b);
+            } else {
+                System.out.println(d);
+            }
+        }
+*/
 
 
 
-        System.out.println(b >= d);
+/*
+        boolean boo;
+        boo = false;
+
+        c = a + 1 + b;
+
+        //System.out.println(false && (a = a - 2) != 0 || (b = -10) != 0 || (b = 110) == 0);
+        //System.out.println(false || (b = -10) != 0 || (b = 110) == 0);
+        //System.out.println(a);
+        System.out.println(c);
+
+        System.out.println(boo && (d = b + 1) != 0);
+        System.out.println(d);
+        System.out.println(boo || (false && false) || true);
+*/
 
         return 1;
     }
 
     public static void main(String[] args) {
-        main(true);
+        int a;
+        a = cenas();
+
+        System.out.println(a);
+        double b;
+        b = coisas(a, 10);
+
+        System.out.println(b);
+
+        return;
+    }
+
+    public static int cenas() {
+    }
+
+    public static double coisas(int a, int b) {
+        return a + b;
     }
 }

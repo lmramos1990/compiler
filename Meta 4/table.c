@@ -76,6 +76,9 @@ SymbolTableNode * semanticAnalysis(ASTNode * tree) {
                     table -> next = createSymbolTableNode(aux -> child -> type, aux -> child -> next -> content, NULL, NULL, 0);
                 }
 
+                // MARK VARIABLE AS GLOBAL
+                table -> next -> flagMethod = 2;
+
                 table = table -> next;
             }
 
@@ -502,6 +505,7 @@ void ASTSemanticAnnotations(ASTNode * node, SymbolTableNode * symbolTable, int f
         }
 
         node -> annotation = strdup("boolean");
+        free(operator);
     } else if(strcmp(node -> type, "Add") == 0 || strcmp(node -> type, "Sub") == 0 || strcmp(node -> type, "Mul") == 0 || strcmp(node -> type, "Div") == 0 || strcmp(node -> type, "Mod") == 0) {
         child1 = node -> child;
         child2 = node -> child -> next;
