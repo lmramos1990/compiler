@@ -202,26 +202,46 @@ void generateIntermidiateRepresentation(ASTNode * node, SymbolTableNode * symbol
         char * operator = NULL;
 
         if(strcmp(node -> type, "Geq") == 0) {
-            operator = strdup(">=");
+            operator = strdup("ge");
         } else if(strcmp(node -> type, "Gt") == 0) {
-            operator = strdup(">");
+            operator = strdup("gt");
         } else if(strcmp(node -> type, "Leq") == 0) {
-            operator = strdup("<=");
+            operator = strdup("le");
         } else if(strcmp(node -> type, "Lt") == 0) {
-            operator = strdup("<");
+            operator = strdup("lt");
         }
+
+        char variableid[1024];
 
         if(strcmp(child1 -> annotation, "int") == 0 && strcmp(child2 -> annotation, "int") == 0) {
-            ;   // int = int
-        } else if(strcmp(child1 -> annotation, "double") == 0 && strcmp(child2 -> annotation, "double") == 0) {
-            ;   // double = double
-        } else if(strcmp(child1 -> annotation, "int") == 0 && strcmp(child2 -> annotation, "double") == 0) {
-            ;   // int - double
-        } else if(strcmp(child1 -> annotation, "double") == 0 && strcmp(child2 -> annotation, "int") == 0) {
-            ;   // double = int
-        }
 
-        // node -> annotation = strdup("boolean");
+            printf(" %c%d = icmp s%s i32 %s, %s\n", '%', variableMemoryCode++, operator, child1 -> llvmCode, child2 -> llvmCode);
+            sprintf(variableid, "%c%d%c", '%', variableMemoryCode++, '\0');
+            node -> llvmCode = strdup(variableid);
+
+        } else if(strcmp(child1 -> annotation, "double") == 0 && strcmp(child2 -> annotation, "double") == 0) {
+
+            printf(" %c%d = fcmp o%s double %s, %s\n", '%', variableMemoryCode++, operator, child1 -> llvmCode, child2 -> llvmCode);
+            sprintf(variableid, "%c%d%c", '%', variableMemoryCode++, '\0');
+            node -> llvmCode = strdup(variableid);
+
+        } else if(strcmp(child1 -> annotation, "double") == 0 && strcmp(child2 -> annotation, "int") == 0) {
+
+            printf(" %c%d = sitofp i32 %s to double\n", '%', variableMemoryCode, child2 -> llvmCode);
+            printf(" %c%d = fcmp o%s double %s, %c%d\n", '%', variableMemoryCode + 1, operator, child1 -> llvmCode, '%', variableMemoryCode);
+            variableMemoryCode++;
+            sprintf(variableid, "%c%d%c", '%', variableMemoryCode++, '\0');
+            node -> llvmCode = strdup(variableid);
+
+        } else if(strcmp(child1 -> annotation, "int") == 0 && strcmp(child2 -> annotation, "double") == 0) {
+
+            printf(" %c%d = sitofp i32 %s to double\n", '%', variableMemoryCode, child1 -> llvmCode);
+            printf(" %c%d = fcmp o%s double %c%d, %s\n", '%', variableMemoryCode + 1, operator, '%', variableMemoryCode, child2 -> llvmCode);
+            variableMemoryCode++;
+            sprintf(variableid, "%c%d%c", '%', variableMemoryCode++, '\0');
+            node -> llvmCode = strdup(variableid);
+
+        }
 
         free(operator);
     } else if(strcmp(node -> type, "Eq") == 0 || strcmp(node -> type, "Neq") == 0) {

@@ -15,48 +15,48 @@ declare i32 @atoi(i8*)
 @counter = common global i1 0
 
 define i32 @Echo.main.boolean(i1 %hello) {
- %hello.addr = alloca i1
- store i1 %hello, i1* %hello.addr
- %bol.addr = alloca i1
- %b.addr = alloca i32
- store i1 0, i1* %hello
- store double 2.0, double* @c
- store i1 1, i1* %counter
- call i1 @Echo.coisa.()
- store i1 (null), i1* %counter
- store i1 1, i1* %bol
- store i1 0, i1* %bol
+ %hello = alloca i1
+ store i1 %hello, i1* %hello
+ %a = alloca i32
+ %b = alloca i32
+ %c = alloca double
+ %d = alloca double
+ store i32 1, i32* %a
+ store i32 1, i32* %b
+ store double 1.0, double* %c
+ store double 1.0, double* %d
+ %1 = load i32, i32* %a
+ %2 = load double, double* %c
+ %3 = sitofp i32 %1 to double
+ %4 = fcmp oge double %3, %2
+ br i1 %4, label %true.1, label %false.1
+true.1:
+ %5 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @str.true, i1 0, i1 0))
+ br label %end.1
+false.1:
+ %6 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([7 x i8], [7 x i8]* @str.false, i1 0, i1 0))
+ br label %end.1
+end.1:
+ %7 = load i32, i32* %b
+ %8 = load double, double* %d
+ %9 = sitofp i32 %7 to double
+ %10 = fcmp oge double %9, %8
+ br i1 %10, label %true.2, label %false.2
+true.2:
+ %11 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @str.true, i1 0, i1 0))
+ br label %end.2
+false.2:
+ %12 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([7 x i8], [7 x i8]* @str.false, i1 0, i1 0))
+ br label %end.2
+end.2:
  ret i32 1
 }
 
 define void @Echo.main.stringarray(i32 %args.c, i8** %args) {
- %args.c.addr = alloca i32
- %args.addr = alloca i8**
- store i32 %args.c, i32* %args.c.addr
- store i8** %args, i8*** %args.addr
- %a.addr = alloca i32
- %b.addr = alloca i32
- store i32 1, i32* %a
- %1 = load i8**, i8*** %args.addr
- %2 = getelementptr inbounds i8*, i8** %1, i32 1
- %3 = load i8*, i8** %2
- %4 = call i32 @atoi(i8* %3)
- store i32 %4, i32* %b
- %5 = load i32, i32* %b.addr
- %6 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @str.int, i32 0, i32 0), i32 %5)
- %7 = load i32, i32* %a.addr
- %8 = load i32, i32* %b.addr
- %9 = sub i32 %7, %8
- store i32 %9, i32* %a
- %10 = load i32, i32* %b.addr
- %11 = load i32, i32* %a.addr
- %12 = sub i32 %10, %11
- store i32 %12, i32* %b
- %13 = load i32, i32* %a.addr
- %14 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @str.int, i32 0, i32 0), i32 %13)
+ %args.c = alloca i32
+ %args = alloca i8**
+ store i32 %args.c, i32* %args.c
+ store i8** %args, i8*** %args
+ call i32 @Echo.main.boolean(i1 1)
  ret void
-}
-
-define i1 @Echo.coisa.() {
- ret i1 1
 }

@@ -4,35 +4,24 @@ class Echo {
     public static boolean counter;
 
     public static int main(boolean hello) {
+        int a, b;
+        double c, d;
 
-        hello = false;
+        a = 1;
+        b = 1;
+        c = 1;
+        d = 1;
 
-        c= 2;
+        System.out.println(a >= c);
 
-        counter = true;
-        counter = coisa();
-        boolean bol;
-        bol = true;
-        bol = false;
 
-        int b;
+
+        System.out.println(b >= d);
 
         return 1;
     }
 
     public static void main(String[] args) {
-        int a, b;
-        a = 1;
-        /*a = Integer.parseInt(args[0]);*/
-        b = Integer.parseInt(args[1]);
-
-        System.out.println(b);
-        a = a-b;
-        b = b-a;
-        System.out.println(a);
-    }
-
-    public static boolean coisa() {
-        return true;
+        main(true);
     }
 }
