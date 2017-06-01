@@ -131,7 +131,7 @@ void generateIntermidiateRepresentation(ASTNode * node, SymbolTableNode * symbol
         int flagFirst;
 
         while (params != NULL) {
-            generateIntermidiateRepresentation(params, symbolTable, 1);
+            generateIntermidiateRepresentation(params, symbolTable, 2);
             if (strcmp(params -> annotation, "int") == 0 && strcmp(stnode -> type, "double") == 0) {
                 printf(" %c%d = sitofp i32 %s to double\n", '%', variableMemoryCode, params -> llvmCode);
                 free(params -> llvmCode);
