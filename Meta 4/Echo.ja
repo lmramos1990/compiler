@@ -2,15 +2,21 @@ class Echo {
 
     public static double c;
     public static boolean counter;
-
+/*
+    public static void main() {
+        return;
+        main1();
+    }
+*/
     public static double main(int hello) {
         int a, b;
         double d;
 
         a = 1;
         b = 0;
-        c = 1;
-        d = 2;
+        c = 1.e2;
+        d = .0;
+        c = 1.2;
 
         System.out.println("----");
 
@@ -24,7 +30,7 @@ class Echo {
         } while (a < 9);
 
 
-/*
+
         boolean boo;
         boo = true;
 
@@ -47,20 +53,17 @@ class Echo {
             }
             a = a - 1;
         } while (a >= 1);
-*/
-/*
+
         do {
             System.out.println(a);
             a = a - 1;
         } while (a >= 1);
-*/
-/*
+
         while (a >= 1) {
             System.out.println(a);
             a = a - 1;
         }
-*/
-/*
+
         if (a == 1) {
             System.out.println(a);
         } else {
@@ -70,25 +73,24 @@ class Echo {
                 System.out.println(d);
             }
         }
-*/
 
 
 
-/*
-        boolean boo;
+
+
         boo = false;
 
         c = a + 1 + b;
 
-        //System.out.println(false && (a = a - 2) != 0 || (b = -10) != 0 || (b = 110) == 0);
-        //System.out.println(false || (b = -10) != 0 || (b = 110) == 0);
-        //System.out.println(a);
+        System.out.println(false && (a = a - 2) != 0 || (b = -10) != 0 || (b = 110) == 0);
+        System.out.println(false || (b = -10) != 0 || (b = 110) == 0);
+        System.out.println(a);
         System.out.println(c);
 
         System.out.println(boo && (d = b + 1) != 0);
         System.out.println(d);
         System.out.println(boo || (false && false) || true);
-*/
+
 
         return 1;
     }
@@ -112,4 +114,5 @@ class Echo {
     public static double coisas(int a, int b) {
         return a + b;
     }
+
 }

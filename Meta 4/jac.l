@@ -13,6 +13,8 @@ number		{digit}({digit}|_)*{digit}|{digit}
 	char * auxType;
 	SymbolTableNode * table = NULL;
 	Payload * payload;
+
+	char *currentBlock;
 %}
 
 %X COMMENT_MULTI STR
@@ -93,64 +95,59 @@ number		{digit}({digit}|_)*{digit}|{digit}
 %%
 
 int main(int argc, char ** argv) {
-	if(argc > 1) {
-		if(strcmp(argv[1], "-l") == 0) {
+	auxType = strdup("placeholder");
+	currentBlock = strdup("placeholder");
+
+	if (argc > 1) {
+		if (strcmp(argv[1], "-l") == 0) {
 			flagM1 = 1;
 			yylex();			/* call Lex entry point */
-		} else if(strcmp(argv[1], "-1") == 0) {
+		} else if (strcmp(argv[1], "-1") == 0) {
 			yylex();			/* call Lex entry point */
 		} else {
 			flagM2 = 1;
 			flagError = 0;
-			auxType = strdup("placeholder");
 
 			yyparse();
 
-			if(!flagError) {
-				if(strcmp(argv[1], "-t") == 0) {
+			if (!flagError) {
+				if (strcmp(argv[1], "-t") == 0) {
 					printTrees(tree, 0, 0);
-					printf("\n");
+				} else if (strcmp(argv[1], "-2") != 0) {
+					table = semanticAnalysis(tree);
+					ASTSemanticAnnotations(tree, table, 0);
+
+					if(strcmp(argv[1], "-s") == 0) {
+						printTable(table);
+						printf("\n");
+						printTrees(tree, 0, 1);
+					}
 				}
 
-				table = semanticAnalysis(tree);
-				ASTSemanticAnnotations(tree, table, 0);
-				printTable(table);
-				printf("\n");
-
-				if(strcmp(argv[1], "-s") == 0) {
-					printTrees(tree, 0, 1);
-				}
-			}
-
-			if(!flagError) {
-				generateIntermidiateRepresentation(tree, table, 0);
+				//generateIntermidiateRepresentation(tree, table, 0);
 			}
 
 			destroySymbolTable(table);
 			destroyAST(tree);
-			free(auxType);
 		}
 	} else {
 		flagM2 = 1;
 		flagError = 0;
-		auxType = strdup("placeholder");
 
 		yyparse();
 
-		if(!flagError) {
+		if (!flagError) {
 			table = semanticAnalysis(tree);
-
 			ASTSemanticAnnotations(tree, table, 0);
 		}
-
-		if(!flagError) {
+		if (!flagError) {
 			generateIntermidiateRepresentation(tree, table, 0);
 		}
 
 		destroySymbolTable(table);
 		destroyAST(tree);
-		free(auxType);
 	}
+
 
 	yylex_destroy();
 
@@ -170,14 +167,23 @@ Payload * createPayloadNode(char * value, int column, int line) {
 	return pl;
 }
 
+void destroyPayloadNode(Payload* pl) {
+	if (pl->value != NULL)
+		free(pl->value);
+
+	free(pl);
+}
 
 int yywrap() {
 	return 1;			/* Esta funcao sera chamada quando o input chegar ao fim. Devolve 1 se nao houver mais nada a processar */
 }
 
 void yyerror (const char * s) {
-	if(strcmp(yytext, "") != 0)
+	flagError = 1;
+
+	if (strcmp(yytext, "") != 0)
 		printf ("Line %d, col %d: %s: %s\n", line, col - (int) yyleng, s, yytext);
-	else
+	else {
 		printf ("Line %d, col %d: %s: %s\n", line, col, s, yytext);
+	}
 }
