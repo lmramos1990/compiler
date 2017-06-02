@@ -79,12 +79,8 @@ void destroyAST(ASTNode * node) {
         return;
     }
 
-    if (node -> next != NULL) {
-        destroyAST(node -> next);
-    }
-    if (node -> child != NULL) {
-        destroyAST(node -> child);
-    }
+    destroyAST(node -> next);
+    destroyAST(node -> child);
 
     free(node -> type);
     if (node -> content != NULL) {

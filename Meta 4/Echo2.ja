@@ -5,6 +5,6 @@ class gcd {
 
 
     public static int main(){
-        func(true, 1, 2);
+        func(2, 2);
     }
 }

@@ -55,29 +55,19 @@
 %nonassoc IFX
 %nonassoc ELSE
 
-%type <node> Program ProgramContent
+%type <node> ProgramContent
 %type <node> FieldDecl FieldDeclContent
 %type <node> MethodDecl MethodHeader FormalParams FormalParamsContent MethodBody MethodBodyContent VarDecl VarDeclContent
 %type <node> Type
 %type <node> Statement Statement2 Expr Expr2 Assignment MethodInvocation MethodInvocationContent ParseArgs
 
-/*
-%destructor { destroyAST($$); } Type FieldDecl FieldDeclContent
-//%destructor { destroyPayloadNode($$); } ID
+%destructor { destroyPayloadNode($$); } <value>
+%destructor { destroyAST($$); } <node>
 
-//%destructor { destroyAST($$); } Statement Statement2
-
-%destructor { destroyPayloadNode($$); } '=' '<' '>' '*' '/' '+' '-' '%' '!'
-%destructor { destroyPayloadNode($$); } AND OR NEQ LEQ GEQ
-%destructor { destroyPayloadNode($$); } DECLIT REALLIT STRLIT
-%destructor { destroyPayloadNode($$); } DOTLENGTH
-
-%destructor { destroyAST($$); } MethodInvocation MethodInvocationContent
-*/
 %%
 
 Program:
-        CLASS ID '{' ProgramContent '}'                 { $$ = createASTNode("Program", NULL, createASTNode("Id", $2, $4, 's'), 'c'); tree = $$; }
+        CLASS ID '{' ProgramContent '}'                 { tree = createASTNode("Program", NULL, createASTNode("Id", $2, $4, 's'), 'c'); }
     ;
 
 ProgramContent:
@@ -89,7 +79,7 @@ ProgramContent:
 
 FieldDecl:
         PUBLIC STATIC Type ID FieldDeclContent ';'      { $3->next = createASTNode("Id", $4, NULL, 0); $$ = createASTNode("FieldDecl", NULL, $3, 'c'); $$->next = $5; }
-    |   error ';'                                       { /*printf("ERROR -> FieldDecl\n");*/ $$ = createASTNode("Dummy", NULL, NULL, 0); }
+    |   error ';'                                       { $$ = createASTNode("Dummy", NULL, NULL, 0); }
     ;
 
 FieldDeclContent:
@@ -144,7 +134,7 @@ Type:
     ;
 
 Statement:
-        error ';'                                       { /*printf("ERROR -> Statement\n");*/ $$ = createASTNode("Dummy", NULL, NULL, 0); }
+        error ';'                                       { $$ = createASTNode("Dummy", NULL, NULL, 0); }
 
     |   '{' Statement2 '}'                              { if($2 == NULL) { $$ = $2; } else { if($2->next == NULL) { $$ = $2; } else { $$ = createASTNode("Block", NULL, $2, 'c'); } } }
 
@@ -178,7 +168,7 @@ Assignment:
 MethodInvocation:
         ID '(' ')'                                      { $$ = createASTNode("Call", NULL, createASTNode("Id", $1, NULL, 0), 'c'); }
     |   ID '(' Expr2 MethodInvocationContent ')'        { $3->next = $4; $$ = createASTNode("Call", NULL, createASTNode("Id", $1, $3, 's'), 'c'); }
-    |   ID '(' error ')'                                { /*printf("ERROR -> MethodInvocation\n");*/ $$ = createASTNode("Dummy", NULL, NULL, 0); }
+    |   ID '(' error ')'                                { $$ = createASTNode("Dummy", $1, NULL, 0); }
     ;
 
 MethodInvocationContent:
@@ -188,7 +178,7 @@ MethodInvocationContent:
 
 ParseArgs:
         PARSEINT '(' ID '[' Expr2 ']' ')'               { $$ = createASTNode("ParseArgs", $1, createASTNode("Id", $3, $5, 's'), 'c'); }
-    |   PARSEINT '(' error ')'                          { /*printf("ERROR -> ParseArgs\n");*/ $$ = createASTNode("Dummy", NULL, NULL, 0); }
+    |   PARSEINT '(' error ')'                          { $$ = createASTNode("Dummy", $1, NULL, 0); }
     ;
 
 Expr2:
@@ -197,7 +187,7 @@ Expr2:
     ;
 
 Expr:
-        '(' error ')'                                   { /*printf("ERROR -> Expr\n");*/ $$ = createASTNode("Dummy", NULL, NULL, 0); }
+        '(' error ')'                                   { $$ = createASTNode("Dummy", NULL, NULL, 0); }
 
     |   MethodInvocation                                { $$ = $1; }
     |   ParseArgs                                       { $$ = $1; }

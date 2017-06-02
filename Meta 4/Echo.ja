@@ -2,12 +2,11 @@ class Echo {
 
     public static double c;
     public static boolean counter;
-/*
+
     public static void main() {
         return;
-        main1();
     }
-*/
+
     public static double main(int hello) {
         int a, b;
         double d;
@@ -73,7 +72,6 @@ class Echo {
                 System.out.println(d);
             }
         }
-
 
 
 
