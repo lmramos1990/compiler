@@ -842,7 +842,7 @@ char * parseParameters(char * params) {
 
 char * recreateRealLit(char * number) {
     int i, isr = 1, point = 0, epos = -1;
-    char *newnumber = (char*) malloc(sizeof(char) * strlen(number) + 1);
+    char *newnumber = (char*) malloc(sizeof(char) * (strlen(number) + 2));  // +2 because it adds a character ('.' or '0')
 
     for (i = 0; i < strlen(number); i++) {
         if (number[i] == '.') {

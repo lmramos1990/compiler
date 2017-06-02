@@ -1,2 +1,4 @@
-String[] = true;
-assign->annotation = String[] ? OR undef?
+void == void
+funcvoid() == funcvoid()
+
+undef == undef

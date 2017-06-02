@@ -1,6 +1,10 @@
 class gcd {
-  public static int main(String[] args){
-  boolean a;
-  a = a || b && c > a;
-  }
+
+    public static int func(boolean a, double p, int c) {}
+    public static void func(boolean x, double a, double y, double c) {}
+
+
+    public static int main(){
+        func(true, 1, 2);
+    }
 }
