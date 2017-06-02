@@ -1,6 +1,0 @@
-class gcd {
-  public static int main(String[] args){
-  boolean a;
-  a = a || b && c > a;
-  }
-}
