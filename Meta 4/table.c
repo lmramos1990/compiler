@@ -43,7 +43,7 @@ SymbolTableNode * semanticAnalysis(ASTNode * tree) {
     ASTNode * aux = tree, * auxMethod, * currentMethod;
     SymbolTableNode * table, * auxTableNode, * root, * auxTableMethodNode, * tablePrevious;
     int flagClassCreated;
-    char typeParams[5121];
+    char typeParams[5121], auxParams[5121];
 
     while(aux != NULL) {
         if(strcmp(aux -> type, "Program") == 0) {
@@ -138,17 +138,20 @@ SymbolTableNode * semanticAnalysis(ASTNode * tree) {
                         printf("Line %d, col %d: Symbol %s already defined\n", auxMethod -> child -> next -> line, auxMethod -> child -> next -> column, auxMethod -> child -> next -> content);
 
                         if(strcmp(auxMethod -> child -> type, "Bool") == 0) {
-                            sprintf(typeParams, "%s,%s", typeParams, "boolean");
+                            sprintf(auxParams, "%s,%s", typeParams, "boolean");
+                            sprintf(typeParams, "%s", auxParams);
                         } else {
-                            sprintf(typeParams, "%s,%c%s", typeParams, (auxMethod -> child -> type)[0] + 'a' - 'A', (auxMethod -> child -> type) + 1);
+                            sprintf(auxParams, "%s,%c%s", typeParams, (auxMethod -> child -> type)[0] + 'a' - 'A', (auxMethod -> child -> type) + 1);
+                            sprintf(typeParams, "%s", auxParams);
                         }
                     } else {
                         if(strcmp(auxMethod -> child -> type, "Bool") == 0) {
-                            // BODE AQUI
-                            sprintf(typeParams, "%s,%s", typeParams, "boolean");
+                            sprintf(auxParams, "%s,%s", typeParams, "boolean");
+                            sprintf(typeParams, "%s", auxParams);
                             auxTableNode -> next = createSymbolTableNode("boolean", auxMethod -> child -> next -> content, NULL, "param", 0);
                         } else {
-                            sprintf(typeParams, "%s,%c%s", typeParams, (auxMethod -> child -> type)[0] + 'a' - 'A', (auxMethod -> child -> type) + 1);
+                            sprintf(auxParams, "%s,%c%s", typeParams, (auxMethod -> child -> type)[0] + 'a' - 'A', (auxMethod -> child -> type) + 1);
+                            sprintf(typeParams, "%s", auxParams);
                             auxTableNode -> next = createSymbolTableNode(auxMethod -> child -> type, auxMethod -> child -> next -> content, NULL, "param", 0);
                         }
                         auxTableNode = auxTableNode -> next;
@@ -157,10 +160,8 @@ SymbolTableNode * semanticAnalysis(ASTNode * tree) {
                     auxMethod = auxMethod -> next;
                 }
 
-                char newTypeParams[5121];
-                sprintf(newTypeParams, "(%s)", typeParams);
-
-                auxTableMethodNode -> params = strdup(newTypeParams);
+                sprintf(auxParams, "(%s)", typeParams);
+                auxTableMethodNode -> params = strdup(auxParams);
             } else {
                 auxTableMethodNode -> params = strdup("()");
             }

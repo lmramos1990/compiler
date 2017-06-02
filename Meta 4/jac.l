@@ -148,6 +148,8 @@ int main(int argc, char ** argv) {
 		destroyAST(tree);
 	}
 
+	free(auxType);
+	free(currentBlock);
 
 	yylex_destroy();
 
