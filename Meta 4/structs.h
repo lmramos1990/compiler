@@ -31,7 +31,7 @@ typedef struct payload_node {
     int column;
 } Payload;
 
-Payload * createPayloadNode(char *value, int line, int column);
+Payload * createPayloadNode(char * value, int line, int column);
 
 ASTNode * createASTNode(char * typeNode, Payload * content, ASTNode * relatedNode, char relation);
 void printTrees(ASTNode * node, int depth, int flagSymbomTable);
@@ -49,8 +49,8 @@ char * parseNumbers(char * number, int *zero);
 
 void generateIntermidiateRepresentation(ASTNode * node, SymbolTableNode * symbolTable, int flagVariable);
 char * removeUnderscores(char * number);
-void doStrings(ASTNode *node);
-void declareVariables(ASTNode *node);
+void doStrings(ASTNode * node);
+void declareVariables(ASTNode * node);
 char * parseParameters(char * params);
 char * recreateRealLit(char * number);
 int stringLength(char * string);
