@@ -1,4 +1,0 @@
-void == void
-funcvoid() == funcvoid()
-
-undef == undef
